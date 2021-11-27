@@ -10,10 +10,10 @@ ________________
 ## Execute query (Java 11)
 
 ```shell
-java -cp target/webgraph-tinkerpop-*.jar Main <graph_path> <query>
+java -cp target/webgraph-tinkerpop-*.jar org.webgraph.tinkerpop.Main <graph_path> <query>
 ```
 ### Example
 Print vertices
 ```shell
-java -cp target/webgraph-tinkerpop-*.jar Main "src/main/resources/example/example" "g.V()" 
+java -cp target/webgraph-tinkerpop-*.jar org.webgraph.tinkerpop.Main "src/main/resources/example/example" "g.V()" 
 ```
