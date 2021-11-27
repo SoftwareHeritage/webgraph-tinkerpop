@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
         if (args == null || args.length != 2 || args[0] == null || args[1] == null) {
-            System.out.println("Usage: Main <graph-path> <query>");
+            System.out.println("Usage: Main <graph_path> <query>");
             return;
         }
         String path = args[0];
