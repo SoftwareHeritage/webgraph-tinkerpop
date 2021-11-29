@@ -31,7 +31,8 @@ public class Main {
     }
 
     private static <S, E> void print(Traversal<S, E> ts) {
-        System.out.println("\nResult:");
-        ts.toList().forEach(System.out::println);
+        StringBuilder sb = new StringBuilder("\nResult:\n");
+        ts.toList().forEach(t -> sb.append(t).append("\n"));
+        System.out.print(sb);
     }
 }
