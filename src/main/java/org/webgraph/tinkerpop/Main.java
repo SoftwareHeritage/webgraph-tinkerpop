@@ -7,13 +7,10 @@ import org.webgraph.tinkerpop.structure.WebGraphGraph;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, ExecutionException, InterruptedException {
+    public static void main(String[] args) {
         if (args == null || args.length != 2 || args[0] == null || args[1] == null) {
             System.out.println("Usage: org.webgraph.tinkerpop.Main <graph_path> <query>");
             return;
@@ -24,13 +21,12 @@ public class Main {
         try (WebGraphGraph g = WebGraphGraph.open(path)) {
             Bindings bindings = new SimpleBindings();
             bindings.put("g", g.traversal());
-            GremlinExecutor ge = GremlinExecutor.build().globalBindings(bindings).create();
-
-            CompletableFuture<Object> evalResult = ge.eval(query, bindings);
-            GraphTraversal<?, ?> actualResult = (GraphTraversal<?, ?>) evalResult.get();
-            ge.getExecutorService().shutdown();
-
-            print(actualResult);
+            try (GremlinExecutor ge = GremlinExecutor.build().globalBindings(bindings).create()) {
+                GraphTraversal<?, ?> result = (GraphTraversal<?, ?>) ge.eval(query, bindings).get();
+                print(result);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
