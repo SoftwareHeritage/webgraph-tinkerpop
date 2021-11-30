@@ -1,12 +1,6 @@
 package org.webgraph.tinkerpop;
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.webgraph.tinkerpop.structure.WebGraphGraph;
-
-import javax.script.Bindings;
-import javax.script.SimpleBindings;
 
 public class Main {
 
@@ -20,25 +14,14 @@ public class Main {
         boolean profile = args.length == 3 && args[2].equals("--profile");
         try (WebGraphGraph g = WebGraphGraph.open(path)) {
             System.out.println("Opened graph: " + path);
-            Bindings bindings = new SimpleBindings();
-            bindings.put("g", g.traversal());
-            try (GremlinExecutor ge = GremlinExecutor.build().globalBindings(bindings).create()) {
-                GraphTraversal<?, ?> result = (GraphTraversal<?, ?>) ge.eval(query, bindings).get();
-                if (profile) {
-                    print(result.profile());
-                } else {
-                    print(result);
-                }
+            var executor = new WebgraphGremlinQueryExecutor(g);
+            if (profile) {
+                executor.profile(query);
+            } else {
+                executor.print(query);
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private static <S, E> void print(Traversal<S, E> ts) {
-        System.out.println("Processing traversal...");
-        while (ts.hasNext()) {
-            System.out.println(ts.next());
         }
     }
 }
