@@ -11,19 +11,24 @@ import javax.script.SimpleBindings;
 public class Main {
 
     public static void main(String[] args) {
-        if (args == null || args.length != 2 || args[0] == null || args[1] == null) {
-            System.out.println("Usage: org.webgraph.tinkerpop.Main <graph_path> <query>");
+        if (args == null || args.length < 2 || args[0] == null || args[1] == null) {
+            System.out.println("Usage: org.webgraph.tinkerpop.Main <graph_path> <query> [--profile]");
             return;
         }
         String path = args[0];
         String query = args[1];
-
+        boolean profile = args.length == 3 && args[2].equals("--profile");
         try (WebGraphGraph g = WebGraphGraph.open(path)) {
+            System.out.println("Opened graph: " + path);
             Bindings bindings = new SimpleBindings();
             bindings.put("g", g.traversal());
             try (GremlinExecutor ge = GremlinExecutor.build().globalBindings(bindings).create()) {
                 GraphTraversal<?, ?> result = (GraphTraversal<?, ?>) ge.eval(query, bindings).get();
-                print(result);
+                if (profile) {
+                    print(result.profile());
+                } else {
+                    print(result);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

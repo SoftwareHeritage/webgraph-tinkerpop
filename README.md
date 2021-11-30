@@ -10,8 +10,10 @@ ________________
 ## Execute query (Java 11)
 
 ```shell
-java -cp target/webgraph-tinkerpop-*.jar org.webgraph.tinkerpop.Main <graph_path> <query>
+java -cp target/webgraph-tinkerpop-*.jar org.webgraph.tinkerpop.Main <graph_path> <query> [--profile]
 ```
+
+if specified `--profile` will output query metrics instead of the results.
 ### Example
 Print vertices
 ```shell
