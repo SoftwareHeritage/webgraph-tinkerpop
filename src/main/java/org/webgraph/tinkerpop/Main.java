@@ -36,8 +36,9 @@ public class Main {
     }
 
     private static <S, E> void print(Traversal<S, E> ts) {
-        StringBuilder sb = new StringBuilder("\nResult:\n");
-        ts.toList().forEach(t -> sb.append(t).append("\n"));
-        System.out.print(sb);
+        System.out.println("Processing traversal...");
+        while (ts.hasNext()) {
+            System.out.println(ts.next());
+        }
     }
 }
