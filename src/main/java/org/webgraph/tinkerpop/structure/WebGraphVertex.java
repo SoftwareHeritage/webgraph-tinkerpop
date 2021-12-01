@@ -13,10 +13,8 @@ import java.util.stream.Stream;
 
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
-    public static final String LABEL = "vertex";
-
     public WebGraphVertex(long id, WebGraphGraph graph) {
-        super(id, LABEL, graph);
+        super(id, graph.getSettings().vertexLabel(id), graph);
     }
 
     @Override

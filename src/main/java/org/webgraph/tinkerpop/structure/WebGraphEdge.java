@@ -13,10 +13,8 @@ import java.util.Iterator;
 
 public class WebGraphEdge extends WebGraphElement implements Edge {
 
-    public static final String LABEL = "edge";
-
     public WebGraphEdge(long fromId, long toId, WebGraphGraph graph) {
-        super(new LongLongImmutablePair(fromId, toId), LABEL, graph);
+        super(new LongLongImmutablePair(fromId, toId), graph.getSettings().edgeLabel(fromId, toId), graph);
     }
 
     @Override

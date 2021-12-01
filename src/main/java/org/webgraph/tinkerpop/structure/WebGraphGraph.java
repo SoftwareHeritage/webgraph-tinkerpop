@@ -12,6 +12,8 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphSettings;
+import org.webgraph.tinkerpop.structure.settings.WebGraphSettings;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,11 +25,19 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private final ImmutableGraph graph;
     private final ImmutableGraph graphTransposed;
     private final Configuration configuration;
+    private final WebGraphSettings settings;
 
-    public WebGraphGraph(String path, Configuration configuration) throws IOException {
+    private WebGraphGraph(String path, Configuration configuration) throws IOException {
+        this(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed"),
+                new DefaultWebGraphSettings(), configuration);
+    }
+
+    private WebGraphGraph(ImmutableGraph forward, ImmutableGraph backward,
+                          WebGraphSettings settings, Configuration configuration) {
         this.configuration = configuration;
-        this.graph = ImmutableGraph.load(path);
-        this.graphTransposed = ImmutableGraph.load(path + "-transposed");
+        this.graph = forward;
+        this.settings = settings;
+        this.graphTransposed = backward;
     }
 
     @Override
@@ -118,9 +128,17 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         return open(config);
     }
 
+    public static WebGraphGraph open(ImmutableGraph forward, ImmutableGraph backward, WebGraphSettings settings) {
+        Configuration config = EMPTY_CONFIGURATION();
+        return new WebGraphGraph(forward, backward, settings, config);
+    }
+
     public static WebGraphGraph open(Configuration configuration) throws IOException {
         String path = configuration.getString(GRAPH_PATH);
         return new WebGraphGraph(path, configuration);
     }
 
+    public WebGraphSettings getSettings() {
+        return settings;
+    }
 }
