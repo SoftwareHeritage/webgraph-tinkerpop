@@ -24,7 +24,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                                      .takeWhile(s -> s != -1)
                                      .map(s -> (Vertex) new WebGraphVertex(s, graph))
                                      .iterator();
-        LazyLongIterator predecessors = graph.getTransposedGraph().successors((Long) id());
+        LazyLongIterator predecessors = graph.getBaseGraph().predecessors((Long) id());
         Iterator<Vertex> in = Stream.generate(predecessors::nextLong)
                                     .takeWhile(s -> s != -1)
                                     .map(s -> (Vertex) new WebGraphVertex(s, graph))
