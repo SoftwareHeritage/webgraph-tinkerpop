@@ -2,6 +2,8 @@ package org.webgraph.tinkerpop.structure;
 
 import it.unimi.dsi.big.webgraph.ImmutableGraph;
 import it.unimi.dsi.big.webgraph.LazyLongIterator;
+import it.unimi.dsi.big.webgraph.LazyLongIterators;
+import it.unimi.dsi.big.webgraph.NodeIterator;
 import it.unimi.dsi.fastutil.longs.LongLongPair;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -18,7 +20,6 @@ import org.webgraph.tinkerpop.structure.settings.WebGraphSettings;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private static final String GRAPH_PATH = "webgraph.path";
@@ -43,32 +44,80 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         if (vertexIds.length == 0) {
             return IteratorUtils.map(graph.nodeIterator(), id -> new WebGraphVertex(id, this));
         }
-        return Stream.of(vertexIds).map(id -> {
-            if (!(id instanceof Number)) {
-                throw new IllegalArgumentException();
+        return new Iterator<>() {
+            int nextIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return nextIndex < vertexIds.length;
             }
-            return ((Number) id).longValue();
-        }).map(id -> (Vertex) new WebGraphVertex(id, this)).iterator();
+
+            @Override
+            public Vertex next() {
+                Object id = vertexIds[nextIndex];
+                if (!(id instanceof Number)) {
+                    throw new IllegalArgumentException("Expected id of numeric type.");
+                }
+                nextIndex++;
+                return new WebGraphVertex(((Number) id).longValue(), WebGraphGraph.this);
+            }
+        };
     }
 
     @Override
     public Iterator<Edge> edges(Object... edgeIds) {
         if (edgeIds.length == 0) {
-            return IteratorUtils.stream(graph.nodeIterator())
-                                .flatMap(from -> {
-                                    LazyLongIterator successors = graph.successors(from);
-                                    return Stream.generate(successors::nextLong)
-                                                 .takeWhile(i -> i != -1)
-                                                 .map(to -> (Edge) new WebGraphEdge(from, to, WebGraphGraph.this));
-                                })
-                                .iterator();
+            return new Iterator<>() {
+                final NodeIterator froms = graph.nodeIterator();
+                long nextFrom = nextFrom();
+                LazyLongIterator tos = nextFrom == -1 ? LazyLongIterators.EMPTY_ITERATOR
+                        : graph.successors(nextFrom);
+                long nextTo = tos.nextLong();
+
+                @Override
+                public boolean hasNext() {
+                    return nextFrom != -1;
+                }
+
+                @Override
+                public Edge next() {
+                    WebGraphEdge next = new WebGraphEdge(nextFrom, nextTo, WebGraphGraph.this);
+                    nextTo = tos.nextLong();
+                    while (nextTo == -1) { // no more successors for this node
+                        nextFrom = nextFrom();
+                        if (nextFrom == -1) { // no more 'from' nodes
+                            break;
+                        }
+                        tos = graph.successors(nextFrom);
+                        nextTo = tos.nextLong();
+                    }
+                    return next;
+                }
+
+                private long nextFrom() {
+                    return froms.hasNext() ? froms.nextLong() : -1;
+                }
+            };
         }
-        return Stream.of(edgeIds).map(id -> {
-            if (!(id instanceof LongLongPair)) {
-                throw new IllegalArgumentException();
+        return new Iterator<>() {
+            int nextIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return nextIndex < edgeIds.length;
             }
-            return ((LongLongPair) id);
-        }).map(id -> (Edge) new WebGraphEdge(id.firstLong(), id.secondLong(), this)).iterator();
+
+            @Override
+            public Edge next() {
+                Object idObj = edgeIds[nextIndex];
+                if (!(idObj instanceof LongLongPair)) {
+                    throw new IllegalArgumentException("Expected id of numeric type.");
+                }
+                LongLongPair id = (LongLongPair) idObj;
+                nextIndex++;
+                return new WebGraphEdge(id.firstLong(), id.secondLong(), WebGraphGraph.this);
+            }
+        };
     }
 
     public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings) {

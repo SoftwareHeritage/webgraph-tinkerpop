@@ -9,7 +9,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
@@ -39,10 +38,21 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
     }
 
     private Iterator<Vertex> toNativeIterator(LazyLongIterator source) {
-        return Stream.generate(source::nextLong)
-                     .takeWhile(s -> s != -1)
-                     .map(s -> (Vertex) new WebGraphVertex(s, graph))
-                     .iterator();
+        return new Iterator<>() {
+            long next = source.nextLong();
+
+            @Override
+            public boolean hasNext() {
+                return next == -1;
+            }
+
+            @Override
+            public Vertex next() {
+                long res = next;
+                next = source.nextLong();
+                return new WebGraphVertex(res, graph);
+            }
+        };
     }
 
     @Override
