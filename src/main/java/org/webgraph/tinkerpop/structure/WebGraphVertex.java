@@ -19,21 +19,26 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     @Override
     public Iterator<Vertex> vertices(Direction direction, String... edgeLabels) {
+        // ignores edge labels
         switch (direction) {
             case OUT:
-                return toIterator(graph.getBaseGraph().successors((Long) id()));
+                return successors();
             case IN:
-                return toIterator(graph.getBaseGraph().predecessors((Long) id()));
+                return predecessors();
             default:
-                LazyLongIterator successors = graph.getBaseGraph().successors((Long) id());
-                Iterator<Vertex> out = toIterator(successors);
-                LazyLongIterator predecessors = graph.getBaseGraph().predecessors((Long) id());
-                Iterator<Vertex> in = toIterator(predecessors);
-                return IteratorUtils.concat(out, in);
+                return IteratorUtils.concat(successors(), predecessors());
         }
     }
 
-    private Iterator<Vertex> toIterator(LazyLongIterator source) {
+    private Iterator<Vertex> predecessors() {
+        return toNativeIterator(graph.getBaseGraph().predecessors((Long) id()));
+    }
+
+    private Iterator<Vertex> successors() {
+        return toNativeIterator(graph.getBaseGraph().successors((Long) id()));
+    }
+
+    private Iterator<Vertex> toNativeIterator(LazyLongIterator source) {
         return Stream.generate(source::nextLong)
                      .takeWhile(s -> s != -1)
                      .map(s -> (Vertex) new WebGraphVertex(s, graph))
@@ -44,18 +49,22 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
     public Iterator<Edge> edges(Direction direction, String... edgeLabels) {
         switch (direction) {
             case OUT:
-                Iterator<Vertex> out = vertices(Direction.OUT, edgeLabels);
-                return IteratorUtils.map(out, to1 -> new WebGraphEdge((long) id(), (long) to1.id(), graph));
+                return outEdges(edgeLabels);
             case IN:
-                Iterator<Vertex> in = vertices(Direction.IN, edgeLabels);
-                return IteratorUtils.map(in, from1 -> new WebGraphEdge((long) from1.id(), (long) id(), graph));
+                return inEdges(edgeLabels);
             default:
-                Iterator<Vertex> in2 = vertices(Direction.IN, edgeLabels);
-                Iterator<Edge> inE = IteratorUtils.map(in2, from -> new WebGraphEdge((long) from.id(), (long) id(), graph));
-                Iterator<Vertex> out2 = vertices(Direction.OUT, edgeLabels);
-                Iterator<Edge> outE = IteratorUtils.map(out2, to -> new WebGraphEdge((long) id(), (long) to.id(), graph));
-                return IteratorUtils.concat(outE, inE);
+                return IteratorUtils.concat(outEdges(edgeLabels), inEdges(edgeLabels));
         }
+    }
+
+    private Iterator<Edge> outEdges(String... edgeLabels) {
+        Iterator<Vertex> out = vertices(Direction.OUT, edgeLabels);
+        return IteratorUtils.map(out, to1 -> new WebGraphEdge((long) id(), (long) to1.id(), graph));
+    }
+
+    private Iterator<Edge> inEdges(String... edgeLabels) {
+        Iterator<Vertex> in = vertices(Direction.IN, edgeLabels);
+        return IteratorUtils.map(in, from1 -> new WebGraphEdge((long) from1.id(), (long) id(), graph));
     }
 
     @Override
