@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
@@ -79,12 +80,44 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(VertexProperty.Cardinality cardinality, String key, V value, Object... keyValues) {
-        throw new UnsupportedOperationException("Vertex properties not supported");
+        throw new UnsupportedOperationException("Vertex property creation is not supported");
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
-        throw new UnsupportedOperationException("Vertex properties not supported");
+        // currently, only long properties
+        return new Iterator<>() {
+            int nextIndex = -1;
+            VertexProperty<V> nextProp = nextProp();
+
+            @Override
+            public boolean hasNext() {
+                return nextIndex < propertyKeys.length;
+            }
+
+            @Override
+            public VertexProperty<V> next() {
+                VertexProperty<V> res = nextProp;
+                nextProp = nextProp();
+                return res;
+            }
+
+            private VertexProperty<V> nextProp() {
+                nextIndex++;
+                while (nextIndex < propertyKeys.length) {
+                    String key = propertyKeys[nextIndex];
+                    Optional<Long> val = graph.getLongProperty(key, (long) id());
+                    if (val.isEmpty()) {
+                        return VertexProperty.empty();
+                    }
+                    if (val.get() != Long.MIN_VALUE) {
+                        return new WebGraphVertexProperty<>(WebGraphVertex.this, key, (V) val.get());
+                    }
+                    nextIndex++;
+                }
+                return null;
+            }
+        };
     }
 
     @Override

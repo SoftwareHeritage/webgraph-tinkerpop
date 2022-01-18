@@ -5,6 +5,7 @@ import it.unimi.dsi.big.webgraph.LazyLongIterator;
 import it.unimi.dsi.big.webgraph.LazyLongIterators;
 import it.unimi.dsi.big.webgraph.NodeIterator;
 import it.unimi.dsi.fastutil.longs.LongLongPair;
+import it.unimi.dsi.util.ByteBufferLongBigList;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -18,8 +19,14 @@ import org.softwareheritage.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphSettings;
 import org.webgraph.tinkerpop.structure.settings.WebGraphSettings;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
 
 public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private static final String GRAPH_PATH = "webgraph.path";
@@ -27,6 +34,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private final BidirectionalImmutableGraph graph;
     private final Configuration configuration;
     private final WebGraphSettings settings;
+    private final Map<String, ByteBufferLongBigList> longProperties = new HashMap<>();
 
     private WebGraphGraph(String path, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
@@ -37,6 +45,21 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         this.configuration = configuration;
         this.graph = graph;
         this.settings = settings;
+    }
+
+    public Optional<Long> getLongProperty(String key, long id) {
+        try {
+            if (!longProperties.containsKey(key)) {
+                String filePath = String.format("%s-%s.bin", configuration.getString(GRAPH_PATH), key);
+                ByteBufferLongBigList map = ByteBufferLongBigList.map(new FileInputStream(filePath).getChannel());
+                longProperties.put(key, map);
+            }
+            return Optional.of(longProperties.get(key).getLong(id));
+        } catch (FileNotFoundException e) {
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
