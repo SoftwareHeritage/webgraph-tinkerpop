@@ -66,31 +66,43 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
 
     @Override
     public Iterator<Edge> edges(Object... edgeIds) {
-        if (edgeIds.length == 0) {
+        if (edgeIds.length == 0) { // returns all graph edges
+            // Iterate over all 'froms' and return an edge for each neighbour.
             return new Iterator<>() {
-                final NodeIterator froms = graph.nodeIterator();
-                long nextFrom = nextFrom();
-                LazyLongIterator tos = nextFrom == -1 ? LazyLongIterators.EMPTY_ITERATOR
-                        : graph.successors(nextFrom);
-                long nextTo = tos.nextLong();
+                NodeIterator froms;
+                long nextFrom;
+                LazyLongIterator tos;
+                long nextTo;
 
-                @Override
-                public boolean hasNext() {
-                    return nextFrom != -1;
-                }
+                WebGraphEdge nextEdge = nextEdge();
 
-                @Override
-                public Edge next() {
-                    WebGraphEdge next = new WebGraphEdge(nextFrom, nextTo, WebGraphGraph.this);
-                    nextTo = tos.nextLong();
+                private WebGraphEdge nextEdge() {
+                    if (froms == null) { // first run, initialize fields
+                        froms = graph.nodeIterator();
+                        nextFrom = nextFrom();
+                        tos = nextFrom == -1 ? LazyLongIterators.EMPTY_ITERATOR : graph.successors(nextFrom);
+                        nextTo = tos.nextLong();
+                    }
                     while (nextTo == -1) { // no more successors for this node
                         nextFrom = nextFrom();
                         if (nextFrom == -1) { // no more 'from' nodes
-                            break;
+                            return null;
                         }
                         tos = graph.successors(nextFrom);
                         nextTo = tos.nextLong();
                     }
+                    return new WebGraphEdge(nextFrom, nextTo, WebGraphGraph.this);
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return nextEdge != null;
+                }
+
+                @Override
+                public Edge next() {
+                    WebGraphEdge next = nextEdge;
+                    nextEdge = nextEdge();
                     return next;
                 }
 
