@@ -47,19 +47,10 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         this.settings = settings;
     }
 
-    public Optional<Long> getLongProperty(String key, long id) {
-        try {
-            if (!longProperties.containsKey(key)) {
-                String filePath = String.format("%s-%s.bin", configuration.getString(GRAPH_PATH), key);
-                ByteBufferLongBigList map = ByteBufferLongBigList.map(new FileInputStream(filePath).getChannel());
-                longProperties.put(key, map);
-            }
-            return Optional.of(longProperties.get(key).getLong(id));
-        } catch (FileNotFoundException e) {
-            return Optional.empty();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings, String path) {
+        Configuration config = EMPTY_CONFIGURATION();
+        config.setProperty(GRAPH_PATH, path);
+        return new WebGraphGraph(graph, settings, config);
     }
 
     @Override
@@ -155,11 +146,6 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         };
     }
 
-    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings) {
-        Configuration config = EMPTY_CONFIGURATION();
-        return new WebGraphGraph(graph, settings, config);
-    }
-
     @Override
     public Vertex addVertex(Object... keyValues) {
         throw Graph.Exceptions.vertexAdditionsNotSupported();
@@ -200,20 +186,39 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         }};
     }
 
+    public static WebGraphGraph open(Configuration configuration) throws IOException {
+        String path = configuration.getString(GRAPH_PATH);
+        return new WebGraphGraph(path, configuration);
+    }
+
     public static WebGraphGraph open(String path) throws IOException {
         Configuration config = EMPTY_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
         return open(config);
     }
 
+    public Optional<Long> getLongProperty(String key, long id) {
+        try {
+            if (!longProperties.containsKey(key)) {
+                String graphPath = configuration.getString(GRAPH_PATH);
+                if (graphPath == null) {
+                    throw new IllegalStateException("No graph path is specified, cannot access properties");
+                }
+                String filePath = String.format("%s-%s.bin", graphPath, key);
+                ByteBufferLongBigList map = ByteBufferLongBigList.map(new FileInputStream(filePath).getChannel());
+                longProperties.put(key, map);
+            }
+            return Optional.of(longProperties.get(key).getLong(id));
+        } catch (FileNotFoundException e) { // not such property
+            return Optional.empty();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     @Override
     public BidirectionalImmutableGraph getBaseGraph() {
         return graph;
-    }
-
-    public static WebGraphGraph open(Configuration configuration) throws IOException {
-        String path = configuration.getString(GRAPH_PATH);
-        return new WebGraphGraph(path, configuration);
     }
 
     public WebGraphSettings getSettings() {

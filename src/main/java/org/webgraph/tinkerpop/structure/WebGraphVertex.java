@@ -107,10 +107,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                 while (nextIndex < propertyKeys.length) {
                     String key = propertyKeys[nextIndex];
                     Optional<Long> val = graph.getLongProperty(key, (long) id());
-                    if (val.isEmpty()) {
-                        return VertexProperty.empty();
-                    }
-                    if (val.get() != Long.MIN_VALUE) {
+                    if (val.isPresent() && val.get() != Long.MIN_VALUE) {
                         return new WebGraphVertexProperty<>(WebGraphVertex.this, key, (V) val.get());
                     }
                     nextIndex++;
