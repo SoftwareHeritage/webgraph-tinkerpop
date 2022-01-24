@@ -51,7 +51,7 @@ public void printQuery(String query) {
     try (WebGraphGraph g = WebGraphGraph.open(
             graph.getGraph().getForwardGraph(),
             graph.getGraph().getBackwardGraph(),
-            graphSettings)) {
+            graphPath, graphSettings)) {
         WebgraphGremlinQueryExecutor e = new WebgraphGremlinQueryExecutor(g);
         e.print(query);
     }

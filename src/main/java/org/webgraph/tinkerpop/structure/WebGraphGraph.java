@@ -209,7 +209,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
                 longProperties.put(key, map);
             }
             return Optional.of(longProperties.get(key).getLong(id));
-        } catch (FileNotFoundException e) { // not such property
+        } catch (FileNotFoundException e) { // no such property
             return Optional.empty();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
