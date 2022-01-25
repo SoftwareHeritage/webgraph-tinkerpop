@@ -3,7 +3,7 @@ package org.webgraph.tinkerpop.structure.settings;
 /**
  * The interface provides methods to define edge and vertex labels for a WebGraph graph.
  */
-public interface WebGraphSettings {
+public interface WebGraphLabelProvider {
     /**
      * Returns the label associated with a vertex
      *

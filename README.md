@@ -73,7 +73,7 @@ public void printQuery(String query){
 `SwhWebGraphSettings.java`
 
 ```java
-public class SwhWebGraphSettings extends DefaultWebGraphSettings {
+public class SwhWebGraphLabelProvider extends DefaultWebGraphLabelProvider {
     private final Graph graph;
 
     public SwhWebGraphSettings(Graph graph) {

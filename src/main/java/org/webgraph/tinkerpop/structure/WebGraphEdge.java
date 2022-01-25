@@ -14,7 +14,7 @@ import java.util.Iterator;
 public class WebGraphEdge extends WebGraphElement implements Edge {
 
     public WebGraphEdge(long fromId, long toId, WebGraphGraph graph) {
-        super(new LongLongImmutablePair(fromId, toId), graph.getSettings().edgeLabel(fromId, toId), graph);
+        super(new LongLongImmutablePair(fromId, toId), graph.getLabelProvider().edgeLabel(fromId, toId), graph);
     }
 
     @Override

@@ -17,8 +17,8 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.softwareheritage.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.property.LongPropertyHandler;
 import org.webgraph.tinkerpop.structure.property.PropertyHandler;
-import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphSettings;
-import org.webgraph.tinkerpop.structure.settings.WebGraphSettings;
+import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphLabelProvider;
+import org.webgraph.tinkerpop.structure.settings.WebGraphLabelProvider;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,26 +31,26 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
 
     private final BidirectionalImmutableGraph graph;
     private final Configuration configuration;
-    private final WebGraphSettings settings;
+    private final WebGraphLabelProvider settings;
     private final Map<String, PropertyHandler<?>> propertyHandlers = new HashMap<>();
     private final Map<String, Class<?>> propTypes;
 
 
     private WebGraphGraph(String path, Map<String, Class<?>> propTypes, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
-                new DefaultWebGraphSettings(),
+                new DefaultWebGraphLabelProvider(),
                 propTypes,
                 configuration);
     }
 
-    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphSettings settings, Map<String, Class<?>> propTypes, Configuration configuration) {
+    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> propTypes, Configuration configuration) {
         this.configuration = configuration;
         this.graph = graph;
         this.settings = settings;
         this.propTypes = propTypes;
     }
 
-    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings, Map<String, Class<?>> propTypes, String path) {
+    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> propTypes, String path) {
         Configuration config = EMPTY_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
         return new WebGraphGraph(graph, settings, propTypes, config);
@@ -236,7 +236,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         return graph;
     }
 
-    public WebGraphSettings getSettings() {
+    public WebGraphLabelProvider getLabelProvider() {
         return settings;
     }
 }

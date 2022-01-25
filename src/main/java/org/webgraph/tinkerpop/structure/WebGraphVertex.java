@@ -13,7 +13,7 @@ import java.util.Iterator;
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     public WebGraphVertex(long id, WebGraphGraph graph) {
-        super(id, graph.getSettings().vertexLabel(id), graph);
+        super(id, graph.getLabelProvider().vertexLabel(id), graph);
     }
 
     @Override
