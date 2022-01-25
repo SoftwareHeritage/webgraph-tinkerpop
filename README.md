@@ -1,12 +1,16 @@
 # [TinkerPop](https://tinkerpop.apache.org/) implementation for [WebGraph](https://webgraph.di.unimi.it/)
+
 Provides the ability to execute Gremlin queries on graphs compressed with WebGraph.
 ________
+
 ## Build
 
 ```shell
 mvn compile assembly:single
 ```
+
 ________________
+
 ## Execute query (Java 11)
 
 ```shell
@@ -37,25 +41,33 @@ To override default vertex/edge labels implement
 the [WebGraphSettings](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/settings/WebGraphSettings.java)
 interface.
 
+### Properties
+
+Properties require type information to be handled correctly. In order to use properties, provide a type map for each
+property file.
+
 ### Example ([swh-graph](https://docs.softwareheritage.org/devel/swh-graph/))
 
 `Server.java`
 
 ```java
-public Server(String graphPath) throws IOException {
-        this.graph = Graph.loadMapped(graphPath);
-        this.graphSettings = new SwhWebGraphSettings(graph);
-}
+public Server(String graphPath)throws IOException{
+        this.graphPath=grapPath;
+        this.graph=Graph.loadMapped(graphPath);
+        this.graphSettings=new SwhWebGraphSettings(graph);
+        this.propTypes=Map.of("rev_author_timestamps",Long.class);
+        }
 
-public void printQuery(String query) {
-    try (WebGraphGraph g = WebGraphGraph.open(
-            graph.getGraph().getForwardGraph(),
-            graph.getGraph().getBackwardGraph(),
-            graphPath, graphSettings)) {
-        WebgraphGremlinQueryExecutor e = new WebgraphGremlinQueryExecutor(g);
+public void printQuery(String query){
+        try(WebGraphGraph g=WebGraphGraph.open(
+        graph.getGraph(),
+        graphPath,
+        propTypes,
+        graphSettings)){
+        WebgraphGremlinQueryExecutor e=new WebgraphGremlinQueryExecutor(g);
         e.print(query);
-    }
-}
+        }
+        }
 ```
 
 `SwhWebGraphSettings.java`

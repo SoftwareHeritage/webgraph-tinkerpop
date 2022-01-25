@@ -5,7 +5,6 @@ import it.unimi.dsi.big.webgraph.LazyLongIterator;
 import it.unimi.dsi.big.webgraph.LazyLongIterators;
 import it.unimi.dsi.big.webgraph.NodeIterator;
 import it.unimi.dsi.fastutil.longs.LongLongPair;
-import it.unimi.dsi.util.ByteBufferLongBigList;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -16,17 +15,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.softwareheritage.graph.BidirectionalImmutableGraph;
+import org.webgraph.tinkerpop.structure.property.LongPropertyHandler;
+import org.webgraph.tinkerpop.structure.property.PropertyHandler;
 import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphSettings;
 import org.webgraph.tinkerpop.structure.settings.WebGraphSettings;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 
 public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private static final String GRAPH_PATH = "webgraph.path";
@@ -34,23 +32,28 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private final BidirectionalImmutableGraph graph;
     private final Configuration configuration;
     private final WebGraphSettings settings;
-    private final Map<String, ByteBufferLongBigList> longProperties = new HashMap<>();
+    private final Map<String, PropertyHandler<?>> propertyHandlers = new HashMap<>();
+    private final Map<String, Class<?>> propTypes;
 
-    private WebGraphGraph(String path, Configuration configuration) throws IOException {
+
+    private WebGraphGraph(String path, Map<String, Class<?>> propTypes, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
-                new DefaultWebGraphSettings(), configuration);
+                new DefaultWebGraphSettings(),
+                propTypes,
+                configuration);
     }
 
-    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphSettings settings, Configuration configuration) {
+    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphSettings settings, Map<String, Class<?>> propTypes, Configuration configuration) {
         this.configuration = configuration;
         this.graph = graph;
         this.settings = settings;
+        this.propTypes = propTypes;
     }
 
-    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings, String path) {
+    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphSettings settings, Map<String, Class<?>> propTypes, String path) {
         Configuration config = EMPTY_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
-        return new WebGraphGraph(graph, settings, config);
+        return new WebGraphGraph(graph, settings, propTypes, config);
     }
 
     @Override
@@ -186,34 +189,46 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         }};
     }
 
-    public static WebGraphGraph open(Configuration configuration) throws IOException {
+    public static WebGraphGraph open(Map<String, Class<?>> propTypes, Configuration configuration) throws IOException {
         String path = configuration.getString(GRAPH_PATH);
-        return new WebGraphGraph(path, configuration);
+        return new WebGraphGraph(path, propTypes, configuration);
+    }
+
+    public static WebGraphGraph open(String path, Map<String, Class<?>> propTypes) throws IOException {
+        Configuration config = EMPTY_CONFIGURATION();
+        config.setProperty(GRAPH_PATH, path);
+        return open(propTypes, config);
     }
 
     public static WebGraphGraph open(String path) throws IOException {
-        Configuration config = EMPTY_CONFIGURATION();
-        config.setProperty(GRAPH_PATH, path);
-        return open(config);
+        return open(path, new HashMap<>());
     }
 
-    public Optional<Long> getLongProperty(String key, long id) {
+    public <V> V getProperty(String key, long id) {
+        if (!propTypes.containsKey(key)) {
+            throw new IllegalArgumentException("Property type not specified for key: " + key);
+        }
+        Class<?> propType = propTypes.get(key);
+        String path = getPropertyFilePath(key);
         try {
-            if (!longProperties.containsKey(key)) {
-                String graphPath = configuration.getString(GRAPH_PATH);
-                if (graphPath == null) {
-                    throw new IllegalStateException("No graph path is specified, cannot access properties");
+            if (propType == Long.class) {
+                if (!propertyHandlers.containsKey(key)) {
+                    propertyHandlers.put(key, new LongPropertyHandler(path));
                 }
-                String filePath = String.format("%s-%s.bin", graphPath, key);
-                ByteBufferLongBigList map = ByteBufferLongBigList.map(new FileInputStream(filePath).getChannel());
-                longProperties.put(key, map);
+                return (V) propertyHandlers.get(key).get(id);
             }
-            return Optional.of(longProperties.get(key).getLong(id));
-        } catch (FileNotFoundException e) { // no such property
-            return Optional.empty();
+            throw new IllegalArgumentException("Unknown prop type: " + propType.getSimpleName());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private String getPropertyFilePath(String propKey) {
+        String graphPath = configuration.getString(GRAPH_PATH);
+        if (graphPath == null) {
+            throw new IllegalStateException("No graph path is specified, cannot access properties");
+        }
+        return String.format("%s-%s.bin", graphPath, propKey);
     }
 
     @Override

@@ -9,7 +9,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
@@ -85,7 +84,6 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
-        // currently, only long properties
         return new Iterator<>() {
             int nextIndex = -1;
             VertexProperty<V> nextProp = nextProp();
@@ -106,9 +104,9 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                 nextIndex++;
                 while (nextIndex < propertyKeys.length) {
                     String key = propertyKeys[nextIndex];
-                    Optional<Long> val = graph.getLongProperty(key, (long) id());
-                    if (val.isPresent() && val.get() != Long.MIN_VALUE) {
-                        return new WebGraphVertexProperty<>(WebGraphVertex.this, key, (V) val.get());
+                    V val = graph.getProperty(key, (long) id());
+                    if (val != null) {
+                        return new WebGraphVertexProperty<>(WebGraphVertex.this, key, val);
                     }
                     nextIndex++;
                 }
