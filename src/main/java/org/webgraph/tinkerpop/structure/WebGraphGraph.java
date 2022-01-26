@@ -231,6 +231,10 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         return String.format("%s-%s.bin", graphPath, propKey);
     }
 
+    public String[] getPropertyKeys() {
+        return propTypes.keySet().toArray(String[]::new);
+    }
+
     @Override
     public BidirectionalImmutableGraph getBaseGraph() {
         return graph;

@@ -84,13 +84,14 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
+        String[] keys = propertyKeys.length == 0 ? graph.getPropertyKeys() : propertyKeys; // if no props are provided, return all props
         return new Iterator<>() {
             int nextIndex = -1;
             VertexProperty<V> nextProp = nextProp();
 
             @Override
             public boolean hasNext() {
-                return nextIndex < propertyKeys.length;
+                return nextIndex < keys.length;
             }
 
             @Override
@@ -102,8 +103,8 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
             private VertexProperty<V> nextProp() {
                 nextIndex++;
-                while (nextIndex < propertyKeys.length) {
-                    String key = propertyKeys[nextIndex];
+                while (nextIndex < keys.length) {
+                    String key = keys[nextIndex];
                     V val = graph.getProperty(key, (long) id());
                     if (val != null) {
                         return new WebGraphVertexProperty<>(WebGraphVertex.this, key, val);
