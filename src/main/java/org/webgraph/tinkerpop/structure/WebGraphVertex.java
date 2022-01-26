@@ -43,7 +43,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
             @Override
             public boolean hasNext() {
-                return next == -1;
+                return next != -1;
             }
 
             @Override
