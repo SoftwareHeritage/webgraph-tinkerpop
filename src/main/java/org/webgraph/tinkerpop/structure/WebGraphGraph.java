@@ -205,19 +205,23 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     }
 
     public <V> V getProperty(String key, long id) {
-        if (!propTypes.containsKey(key)) {
-            throw new IllegalArgumentException("Property type not specified for key: " + key);
+        if (!propertyHandlers.containsKey(key)) {
+            if (!propTypes.containsKey(key)) {
+                throw new IllegalArgumentException("Property type not specified for key: " + key);
+            }
+            Class<?> propType = propTypes.get(key);
+            String path = getPropertyFilePath(key);
+            propertyHandlers.put(key, newPropertyHandler(propType, path));
         }
-        Class<?> propType = propTypes.get(key);
-        String path = getPropertyFilePath(key);
+        return (V) propertyHandlers.get(key).get(id);
+    }
+
+    private PropertyHandler<?> newPropertyHandler(Class<?> propType, String path) {
         try {
             if (propType == Long.class) {
-                if (!propertyHandlers.containsKey(key)) {
-                    propertyHandlers.put(key, new LongPropertyHandler(path));
-                }
-                return (V) propertyHandlers.get(key).get(id);
+                return new LongPropertyHandler(path);
             }
-            throw new IllegalArgumentException("Unknown prop type: " + propType.getSimpleName());
+            throw new IllegalArgumentException("Unknown property type: " + propType.getSimpleName());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
