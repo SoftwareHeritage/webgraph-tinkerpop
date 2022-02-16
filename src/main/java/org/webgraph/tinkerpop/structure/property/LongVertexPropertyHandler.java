@@ -5,11 +5,11 @@ import it.unimi.dsi.util.ByteBufferLongBigList;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class LongPropertyHandler implements PropertyHandler<Long> {
+public class LongVertexPropertyHandler implements VertexPropertyHandler<Long> {
 
     private final ByteBufferLongBigList props;
 
-    public LongPropertyHandler(String path) throws IOException {
+    public LongVertexPropertyHandler(String path) throws IOException {
         props = ByteBufferLongBigList.map(new FileInputStream(path).getChannel());
     }
 

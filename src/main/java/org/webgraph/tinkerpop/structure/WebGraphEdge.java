@@ -31,14 +31,45 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
         }
     }
 
-    @Override
-    public <V> Property<V> property(String key, V value) {
-        throw new UnsupportedOperationException();
-    }
 
     @Override
     public <V> Iterator<Property<V>> properties(String... propertyKeys) {
-        throw new UnsupportedOperationException();
+        String[] keys = propertyKeys.length == 0 ? graph.getEdgePropertyKeys() : propertyKeys; // if no props are provided, return all props
+        return new Iterator<>() {
+            int nextIndex = -1;
+            Property<V> nextProp = nextProp();
+
+            @Override
+            public boolean hasNext() {
+                return nextIndex < keys.length;
+            }
+
+            @Override
+            public Property<V> next() {
+                Property<V> res = nextProp;
+                nextProp = nextProp();
+                return res;
+            }
+
+            private Property<V> nextProp() {
+                nextIndex++;
+                while (nextIndex < keys.length) {
+                    String key = keys[nextIndex];
+                    LongLongPair id = (LongLongPair) id();
+                    V val = graph.getEdgeProperty(key, id.firstLong(), id.secondLong());
+                    if (val != null) {
+                        return new WebGraphProperty<>(WebGraphEdge.this, key, val);
+                    }
+                    nextIndex++;
+                }
+                return null;
+            }
+        };
+    }
+
+    @Override
+    public <V> Property<V> property(String key, V value) {
+        return null;
     }
 
     @Override

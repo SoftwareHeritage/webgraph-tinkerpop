@@ -1,6 +1,6 @@
 package org.webgraph.tinkerpop.structure.property;
 
-public interface PropertyHandler<V> {
+public interface VertexPropertyHandler<V> {
     /**
      * Returns the value associated with this node, or {@code null} if the value is empty.
      *

@@ -15,8 +15,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.softwareheritage.graph.BidirectionalImmutableGraph;
-import org.webgraph.tinkerpop.structure.property.LongPropertyHandler;
-import org.webgraph.tinkerpop.structure.property.PropertyHandler;
+import org.webgraph.tinkerpop.structure.property.EdgePropertyHandler;
+import org.webgraph.tinkerpop.structure.property.LongVertexPropertyHandler;
+import org.webgraph.tinkerpop.structure.property.VertexPropertyHandler;
 import org.webgraph.tinkerpop.structure.settings.DefaultWebGraphLabelProvider;
 import org.webgraph.tinkerpop.structure.settings.WebGraphLabelProvider;
 
@@ -32,28 +33,28 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     private final BidirectionalImmutableGraph graph;
     private final Configuration configuration;
     private final WebGraphLabelProvider settings;
-    private final Map<String, PropertyHandler<?>> propertyHandlers = new HashMap<>();
-    private final Map<String, Class<?>> propTypes;
+    private final Map<String, VertexPropertyHandler<?>> vertexPropertyHandlers = new HashMap<>();
+    private final Map<String, EdgePropertyHandler<?>> edgePropertyHandlers = new HashMap<>();
+    private final Map<String, Class<?>> vertexPropTypes;
+    private final Map<String, Class<?>> edgePropTypes;
 
-
-    private WebGraphGraph(String path, Map<String, Class<?>> propTypes, Configuration configuration) throws IOException {
+    private WebGraphGraph(String path, Map<String, Class<?>> vertexPropTypes, Map<String, Class<?>> edgePropTypes, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
-                new DefaultWebGraphLabelProvider(),
-                propTypes,
-                configuration);
+                new DefaultWebGraphLabelProvider(), vertexPropTypes, edgePropTypes, configuration);
     }
 
-    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> propTypes, Configuration configuration) {
+    private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> vertexPropTypes, Map<String, Class<?>> edgePropTypes, Configuration configuration) {
         this.configuration = configuration;
         this.graph = graph;
         this.settings = settings;
-        this.propTypes = propTypes;
+        this.vertexPropTypes = vertexPropTypes;
+        this.edgePropTypes = edgePropTypes;
     }
 
-    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> propTypes, String path) {
+    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphLabelProvider settings, Map<String, Class<?>> vertexPropTypes, Map<String, Class<?>> edgePropTypes, String path) {
         Configuration config = EMPTY_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
-        return new WebGraphGraph(graph, settings, propTypes, config);
+        return new WebGraphGraph(graph, settings, vertexPropTypes, edgePropTypes, config);
     }
 
     @Override
@@ -189,42 +190,58 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
         }};
     }
 
-    public static WebGraphGraph open(Map<String, Class<?>> propTypes, Configuration configuration) throws IOException {
+    public static WebGraphGraph open(Map<String, Class<?>> vertexPropTypes, Map<String, Class<?>> edgePropTypes, Configuration configuration) throws IOException {
         String path = configuration.getString(GRAPH_PATH);
-        return new WebGraphGraph(path, propTypes, configuration);
+        return new WebGraphGraph(path, vertexPropTypes, edgePropTypes, configuration);
     }
 
-    public static WebGraphGraph open(String path, Map<String, Class<?>> propTypes) throws IOException {
+    public static WebGraphGraph open(String path, Map<String, Class<?>> vertexPropTypes, Map<String, Class<?>> edgePropTypes) throws IOException {
         Configuration config = EMPTY_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
-        return open(propTypes, config);
+        return open(vertexPropTypes, edgePropTypes, config);
     }
 
     public static WebGraphGraph open(String path) throws IOException {
-        return open(path, new HashMap<>());
+        return open(path, new HashMap<>(), new HashMap<>());
     }
 
-    public <V> V getProperty(String key, long id) {
-        if (!propertyHandlers.containsKey(key)) {
-            if (!propTypes.containsKey(key)) {
+    public <V> V getVertexProperty(String key, long id) {
+        if (!vertexPropertyHandlers.containsKey(key)) {
+            if (!vertexPropTypes.containsKey(key)) {
                 throw new IllegalArgumentException("Property type not specified for key: " + key);
             }
-            Class<?> propType = propTypes.get(key);
+            Class<?> propType = vertexPropTypes.get(key);
             String path = getPropertyFilePath(key);
-            propertyHandlers.put(key, newPropertyHandler(propType, path));
+            vertexPropertyHandlers.put(key, newVertexPropertyHandler(propType, path));
         }
-        return (V) propertyHandlers.get(key).get(id);
+        return (V) vertexPropertyHandlers.get(key).get(id);
     }
 
-    private PropertyHandler<?> newPropertyHandler(Class<?> propType, String path) {
+    public <V> V getEdgeProperty(String key, long from, long to) {
+        if (!edgePropertyHandlers.containsKey(key)) {
+            if (!edgePropertyHandlers.containsKey(key)) {
+                throw new IllegalArgumentException("Property type not specified for key: " + key);
+            }
+            Class<?> propType = edgePropTypes.get(key);
+            String path = getPropertyFilePath(key);
+            edgePropertyHandlers.put(key, newEdgePropertyHandler(propType, path));
+        }
+        return (V) edgePropertyHandlers.get(key).get(from, to);
+    }
+
+    private VertexPropertyHandler<?> newVertexPropertyHandler(Class<?> propType, String path) {
         try {
             if (propType == Long.class) {
-                return new LongPropertyHandler(path);
+                return new LongVertexPropertyHandler(path);
             }
             throw new IllegalArgumentException("Unknown property type: " + propType.getSimpleName());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private EdgePropertyHandler<?> newEdgePropertyHandler(Class<?> propType, String path) {
+        throw new UnsupportedOperationException("Edge property handlers not supported");
     }
 
     private String getPropertyFilePath(String propKey) {
@@ -236,7 +253,11 @@ public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
     }
 
     public String[] getPropertyKeys() {
-        return propTypes.keySet().toArray(String[]::new);
+        return vertexPropTypes.keySet().toArray(String[]::new);
+    }
+
+    public String[] getEdgePropertyKeys() {
+        return edgePropTypes.keySet().toArray(String[]::new);
     }
 
     @Override

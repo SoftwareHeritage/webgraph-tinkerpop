@@ -5,6 +5,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -105,7 +106,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                 nextIndex++;
                 while (nextIndex < keys.length) {
                     String key = keys[nextIndex];
-                    V val = graph.getProperty(key, (long) id());
+                    V val = graph.getVertexProperty(key, (long) id());
                     if (val != null) {
                         return new WebGraphVertexProperty<>(WebGraphVertex.this, key, val);
                     }
@@ -129,5 +130,15 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
     @Override
     public String toString() {
         return StringFactory.vertexString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return ElementHelper.hashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.id().equals(((WebGraphVertex) obj).id());
     }
 }
