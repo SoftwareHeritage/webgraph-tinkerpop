@@ -37,52 +37,87 @@ instance with one of the `open` methods.
 Use [WebgraphGremlinQueryExecutor](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/WebgraphGremlinQueryExecutor.java)
 to execute `Gremlin` queries.
 
-To override default vertex/edge labels implement
-the [WebGraphSettings](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/settings/WebGraphSettings.java)
-interface.
+### Properties and labels
 
-### Properties
-
-Properties require type information to be handled correctly. In order to use properties, provide a type map for each
-property file.
+In order for Gremlin to access your properties, you need to provide an implementation
+of [WebGraphPropertyProvider](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/provider/WebGraphPropertyProvider.java)
+. The implementation will let Gremlin access node/edge properties by id.
 
 ### Example ([swh-graph](https://docs.softwareheritage.org/devel/swh-graph/))
 
 `Server.java`
 
 ```java
-public Server(String graphPath)throws IOException{
-        this.graphPath=grapPath;
-        this.graph=Graph.loadMapped(graphPath);
-        this.graphSettings=new SwhWebGraphSettings(graph);
-        this.propTypes=Map.of("rev_author_timestamps",Long.class);
-        }
+public class Server {
+    public Server(String graphPath) throws IOException {
+        this.graphPath = graphPath;
+        this.graph = Graph.loadLabelled(graphPath); // Load graph into memory. Labels will provide edge properties.
+        this.graph.loadAuthorTimestamp(); // Load a property file.
+        
+        this.propertyProvider = new SwhWebGraphPropertyProvider(graph);
+    }
 
-public void printQuery(String query){
-        try(WebGraphGraph g=WebGraphGraph.open(
-        graph.getGraph(),
-        graphPath,
-        propTypes,
-        graphSettings)){
-        WebgraphGremlinQueryExecutor e=new WebgraphGremlinQueryExecutor(g);
-        e.print(query);
+    public void printQuery(String query) {
+        try (WebGraphGraph g = WebGraphGraph.open(graph.getGraph(), graphSettings, graphPath)) {
+            WebgraphGremlinQueryExecutor e = new WebgraphGremlinQueryExecutor(g);
+            e.print(query);
         }
-        }
+    }
+}
 ```
 
-`SwhWebGraphSettings.java`
+`SwhWebGraphPropertyProvider.java`
 
 ```java
-public class SwhWebGraphLabelProvider extends DefaultWebGraphLabelProvider {
+public class SwhWebGraphPropertyProvider implements WebGraphPropertyProvider {
     private final Graph graph;
 
-    public SwhWebGraphSettings(Graph graph) {
+    public SwhWebGraphPropertyProvider(Graph graph) {
         this.graph = graph;
     }
 
     @Override
-    public String vertexLabel(long vertexId) {
-        return graph.getNodeType(vertexId).toString();
+    public String nodeLabel(long nodeId) {
+        return graph.getNodeType(nodeId).toString();
+    }
+
+    @Override
+    public String[] nodeProperties(long nodeId) {
+        return new String[]{"author_timestamp"};
+    }
+
+    @Override
+    public Object nodeProperty(String key, long nodeId) {
+        if (!"author_timestamp".equals(key)) {
+            throw new RuntimeException("Unknown property key: " + key);
+        }
+        long authorTimestamp = graph.getAuthorTimestamp(nodeId);
+        return authorTimestamp == Long.MIN_VALUE ? null : authorTimestamp;
+    }
+
+    @Override
+    public String[] arcProperties(long fromId, long toId) {
+        return new String[]{"dir_entry"};
+    }
+
+    @Override
+    public String arcLabel(long fromId, long toId) {
+        return "edge";
+    }
+
+    @Override
+    public Object arcProperty(String key, long fromId, long toId) {
+        if (!key.equals("dir_entry")) {
+            throw new RuntimeException("Unknown property key: " + key);
+        }
+        var s = graph.labelledSuccessors(fromId);
+        long succ;
+        while ((succ = s.nextLong()) != -1) {
+            if (succ == toId) {
+                return s.label().get();
+            }
+        }
+        return null;
     }
 }
 ```
