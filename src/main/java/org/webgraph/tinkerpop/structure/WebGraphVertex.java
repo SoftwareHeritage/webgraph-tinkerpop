@@ -139,6 +139,6 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     @Override
     public boolean equals(Object obj) {
-        return this.id().equals(((WebGraphVertex) obj).id());
+        return ElementHelper.areEqual(this, obj);
     }
 }

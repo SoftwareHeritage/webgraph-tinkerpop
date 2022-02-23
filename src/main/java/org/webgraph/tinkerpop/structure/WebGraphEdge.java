@@ -6,6 +6,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -80,5 +81,15 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
     @Override
     public String toString() {
         return StringFactory.edgeString(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return ElementHelper.hashCode(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return ElementHelper.areEqual(this, obj);
     }
 }
