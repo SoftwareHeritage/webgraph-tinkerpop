@@ -14,7 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.softwareheritage.graph.BidirectionalImmutableGraph;
+import org.webgraph.tinkerpop.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.provider.DefaultWebGraphPropertyProvider;
 import org.webgraph.tinkerpop.structure.provider.WebGraphPropertyProvider;
 
