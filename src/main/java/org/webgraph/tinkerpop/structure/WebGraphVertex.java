@@ -14,7 +14,7 @@ import java.util.Iterator;
 public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     public WebGraphVertex(long id, WebGraphGraph graph) {
-        super(id, graph.getPropertyProvider().nodeLabel(id), graph);
+        super(id, graph.getPropertyProvider().vertexLabel(id), graph);
     }
 
     @Override
@@ -86,7 +86,8 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
     @Override
     public <V> Iterator<VertexProperty<V>> properties(String... propertyKeys) {
         String[] keys = propertyKeys.length == 0
-                ? graph.getPropertyProvider().nodeProperties((long) id()) // if no props are provided, return all props
+                ? graph.getPropertyProvider()
+                       .vertexProperties((long) id()) // if no props are provided, return all props
                 : propertyKeys;
         return new Iterator<>() {
             int nextIndex = -1;
@@ -108,7 +109,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                 nextIndex++;
                 while (nextIndex < keys.length) {
                     String key = keys[nextIndex];
-                    Object val = graph.getPropertyProvider().nodeProperty(key, (long) id());
+                    Object val = graph.getPropertyProvider().vertexProperty(key, (long) id());
                     if (val != null) {
                         return new WebGraphVertexProperty<>(WebGraphVertex.this, key, (V) val);
                     }

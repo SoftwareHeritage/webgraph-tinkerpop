@@ -10,27 +10,27 @@ public interface WebGraphPropertyProvider {
      * Returns the label associated with a node.
      * A node can only have one label.
      *
-     * @param nodeId the id of the vertex
+     * @param vertexId the id of the vertex
      * @return the associated label
      */
-    String nodeLabel(long nodeId);
+    String vertexLabel(long vertexId);
 
     /**
      * Returns keys of all properties, available for this node.
      *
-     * @param nodeId the id of the vertex
+     * @param vertexId the id of the vertex
      * @return the associated label
      */
-    String[] nodeProperties(long nodeId);
+    String[] vertexProperties(long vertexId);
 
     /**
      * Returns the value of the property associated with a node.
      *
-     * @param key    the key of the property
-     * @param nodeId the id of the vertex
+     * @param key      the key of the property
+     * @param vertexId the id of the vertex
      * @return the value of the property, or null of no value is present
      */
-    Object nodeProperty(String key, long nodeId);
+    Object vertexProperty(String key, long vertexId);
 
     /**
      * Returns keys of all properties, available for this arc.
@@ -39,7 +39,7 @@ public interface WebGraphPropertyProvider {
      * @param toId   the id of the in vertex (head of the edge)
      * @return the associated label
      */
-    String[] arcProperties(long fromId, long toId);
+    String[] edgeProperties(long fromId, long toId);
 
     /**
      * Returns the label associated with an arc.
@@ -49,7 +49,7 @@ public interface WebGraphPropertyProvider {
      * @param toId   the id of the in vertex (head of the edge)
      * @return the associated label
      */
-    String arcLabel(long fromId, long toId);
+    String edgeLabel(long fromId, long toId);
 
     /**
      * Returns the value of the property associated with an arc.
@@ -59,6 +59,6 @@ public interface WebGraphPropertyProvider {
      * @param toId   the id of the in vertex
      * @return the value of the property, or null of no value is present
      */
-    Object arcProperty(String key, long fromId, long toId);
+    Object edgeProperty(String key, long fromId, long toId);
 
 }

@@ -77,17 +77,17 @@ public class SwhWebGraphPropertyProvider implements WebGraphPropertyProvider {
     }
 
     @Override
-    public String nodeLabel(long nodeId) {
+    public String vertexLabel(long nodeId) {
         return graph.getNodeType(nodeId).toString();
     }
 
     @Override
-    public String[] nodeProperties(long nodeId) {
+    public String[] vertexProperties(long nodeId) {
         return new String[]{"author_timestamp"};
     }
 
     @Override
-    public Object nodeProperty(String key, long nodeId) {
+    public Object vertexProperty(String key, long nodeId) {
         if (!"author_timestamp".equals(key)) {
             throw new RuntimeException("Unknown property key: " + key);
         }
@@ -96,17 +96,17 @@ public class SwhWebGraphPropertyProvider implements WebGraphPropertyProvider {
     }
 
     @Override
-    public String[] arcProperties(long fromId, long toId) {
+    public String[] edgeProperties(long fromId, long toId) {
         return new String[]{"dir_entry"};
     }
 
     @Override
-    public String arcLabel(long fromId, long toId) {
+    public String edgeLabel(long fromId, long toId) {
         return "edge";
     }
 
     @Override
-    public Object arcProperty(String key, long fromId, long toId) {
+    public Object edgeProperty(String key, long fromId, long toId) {
         if (!key.equals("dir_entry")) {
             throw new RuntimeException("Unknown property key: " + key);
         }

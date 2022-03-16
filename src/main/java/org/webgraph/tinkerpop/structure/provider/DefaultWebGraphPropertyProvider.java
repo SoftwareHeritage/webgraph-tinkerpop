@@ -6,32 +6,32 @@ package org.webgraph.tinkerpop.structure.provider;
 public class DefaultWebGraphPropertyProvider implements WebGraphPropertyProvider {
 
     @Override
-    public String nodeLabel(long nodeId) {
+    public String vertexLabel(long vertexId) {
         return null;
     }
 
     @Override
-    public String[] nodeProperties(long nodeId) {
+    public String[] vertexProperties(long vertexId) {
         return new String[0];
     }
 
     @Override
-    public Object nodeProperty(String key, long nodeId) {
+    public Object vertexProperty(String key, long vertexId) {
         return null;
     }
 
     @Override
-    public String[] arcProperties(long fromId, long toId) {
+    public String[] edgeProperties(long fromId, long toId) {
         return new String[0];
     }
 
     @Override
-    public String arcLabel(long fromId, long toId) {
+    public String edgeLabel(long fromId, long toId) {
         return null;
     }
 
     @Override
-    public Object arcProperty(String key, long fromId, long toId) {
+    public Object edgeProperty(String key, long fromId, long toId) {
         return null;
     }
 }

@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class WebGraphEdge extends WebGraphElement implements Edge {
 
     public WebGraphEdge(long fromId, long toId, WebGraphGraph graph) {
-        super(new LongLongImmutablePair(fromId, toId), graph.getPropertyProvider().arcLabel(fromId, toId), graph);
+        super(new LongLongImmutablePair(fromId, toId), graph.getPropertyProvider().edgeLabel(fromId, toId), graph);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
     public <V> Iterator<Property<V>> properties(String... propertyKeys) {
         LongLongPair id = (LongLongPair) id();
         String[] keys = propertyKeys.length == 0 ? graph.getPropertyProvider()
-                                                        .arcProperties(id.firstLong(), id.secondLong()) : propertyKeys; // if no props are provided, return all props
+                                                        .edgeProperties(id.firstLong(), id.secondLong()) : propertyKeys; // if no props are provided, return all props
         return new Iterator<>() {
             int nextIndex = -1;
             Property<V> nextProp = nextProp();
@@ -58,7 +58,7 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
                 nextIndex++;
                 while (nextIndex < keys.length) {
                     String key = keys[nextIndex];
-                    Object val = graph.getPropertyProvider().arcProperty(key, id.firstLong(), id.secondLong());
+                    Object val = graph.getPropertyProvider().edgeProperty(key, id.firstLong(), id.secondLong());
                     if (val != null) {
                         return new WebGraphProperty<>(WebGraphEdge.this, key, (V) val);
                     }
