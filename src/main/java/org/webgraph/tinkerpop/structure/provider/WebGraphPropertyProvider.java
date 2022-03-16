@@ -2,7 +2,7 @@ package org.webgraph.tinkerpop.structure.provider;
 
 /**
  * This interface defines methods to be provided to the TinkerPop implementation.
- * The methods include fetching node/arc labels and properties, as well as associated property keys.
+ * The methods include fetching vertex/edge labels and properties, as well as associated property keys.
  */
 public interface WebGraphPropertyProvider {
 

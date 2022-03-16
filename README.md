@@ -41,7 +41,9 @@ to execute `Gremlin` queries.
 
 In order for Gremlin to access your properties, you need to provide an implementation
 of [WebGraphPropertyProvider](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/provider/WebGraphPropertyProvider.java)
-. The implementation will let Gremlin access node/edge properties by id.
+. The implementation will let Gremlin access node/edge properties by id. You can either
+use [SimpleWebGraphPropertyProvider](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/provider/SimpleWebGraphPropertyProvider.java)
+, or provide your own implementation.
 
 ### Example ([swh-graph](https://docs.softwareheritage.org/devel/swh-graph/))
 
@@ -118,6 +120,29 @@ public class SwhWebGraphPropertyProvider implements WebGraphPropertyProvider {
             }
         }
         return null;
+    }
+}
+```
+
+### Example with [SimpleWebGraphPropertyProvider](https://github.com/andrey-star/webgraph-tinkerpop/blob/master/src/main/java/org/webgraph/tinkerpop/structure/provider/SimpleWebGraphPropertyProvider.java)
+
+`Server.java`
+
+```java
+public class Server {
+    public Server(String graphPath) throws IOException {
+        this.graph = Graph.loadLabelled(graphPath);  // Load graph into memory. Labels will provide edge properties.
+        this.propertyProvider = new SimpleWebGraphPropertyProvider();
+        this.propertyProvider.addVertexProperty(new FileVertexProperty("author_timestamp", Long.class, Path.of(path + ".property.author_timestamp.bin"))); // FileVertexProperty will read the property value from disk
+        this.propertyProvider.addEdgeProperty(new ArcLabelEdgeProperty((ArcLabelledImmutableGraph) graph.getGraph().getForwardGraph())); // Use arc labels as edge property.
+        this.propertyProvider.setVertexLabeller(id -> graph.getNodeType(id).toString()); // Provide custom vertex labels
+    }
+
+    public void printQuery(String query) {
+        try (WebGraphGraph g = WebGraphGraph.open(graph.getGraph(), graphSettings, graphPath)) {
+            WebgraphGremlinQueryExecutor e = new WebgraphGremlinQueryExecutor(g);
+            e.print(query);
+        }
     }
 }
 ```
