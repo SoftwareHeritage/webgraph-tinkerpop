@@ -2,28 +2,33 @@ package org.webgraph.tinkerpop.structure.property.edge;
 
 import it.unimi.dsi.big.webgraph.labelling.ArcLabelledImmutableGraph;
 
-public class ArcLabelEdgeProperty implements EdgeProperty {
+/**
+ * Edge property getter based on {@link ArcLabelledImmutableGraph}
+ */
+public class ArcLabelEdgeProperty extends EdgeProperty {
 
-    private final ArcLabelledImmutableGraph graph;
+    private static final String KEY = "__arc_label_property__";
 
+    /**
+     * Constructs an edge property from an {@code ArcLabelledImmutableGraph}.
+     * The labels are used as a property with a predefined key {@link #KEY}.
+     *
+     * @param graph the {@code ArcLabelledImmutableGraph}.
+     */
     public ArcLabelEdgeProperty(ArcLabelledImmutableGraph graph) {
-        this.graph = graph;
+        super(KEY, getArcLabelPropertyGetter(graph));
     }
 
-    @Override
-    public String getKey() {
-        return "__arc_label_property__";
-    }
-
-    @Override
-    public Object get(long fromId, long toId) {
-        var s = graph.successors(fromId);
-        long succ;
-        while ((succ = s.nextLong()) != -1) {
-            if (succ == toId) {
-                return s.label().get();
+    public static EdgePropertyGetter getArcLabelPropertyGetter(ArcLabelledImmutableGraph graph) {
+        return (fromId, toId) -> {
+            var s = graph.successors(fromId);
+            long succ;
+            while ((succ = s.nextLong()) != -1) {
+                if (succ == toId) {
+                    return s.label().get();
+                }
             }
-        }
-        return null;
+            return null;
+        };
     }
 }
