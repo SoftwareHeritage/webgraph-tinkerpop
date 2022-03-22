@@ -1,11 +1,11 @@
 package org.webgraph.tinkerpop.structure.property.vertex.file.type;
 
 import it.unimi.dsi.fastutil.longs.LongBigList;
-import it.unimi.dsi.util.ByteBufferLongBigList;
+import it.unimi.dsi.fastutil.longs.LongMappedBigList;
 import org.webgraph.tinkerpop.structure.property.vertex.VertexPropertyGetter;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Path;
 
 /**
@@ -14,7 +14,7 @@ import java.nio.file.Path;
  * Expects the property file to store a {@code LongBigList} with indices corresponding to vertex ids.
  * A value of {@link Long#MIN_VALUE}  corresponds to empty value.
  *
- * @implNote Uses {@link ByteBufferLongBigList#map} to read the file.
+ * @implNote Uses {@link LongMappedBigList#map} to read the file.
  */
 public class LongFileVertexPropertyGetter implements VertexPropertyGetter {
     private final LongBigList list;
@@ -22,11 +22,13 @@ public class LongFileVertexPropertyGetter implements VertexPropertyGetter {
     /**
      * Constructs a property getter from file path.
      *
-     * @param path the path to the property file.
+     * @param path the path to the property file containing a {@code LongBigList}.
      * @throws IOException if an I/O error occurs
      */
     public LongFileVertexPropertyGetter(Path path) throws IOException {
-        this.list = ByteBufferLongBigList.map(new FileInputStream(path.toFile()).getChannel());
+        try (RandomAccessFile raf = new RandomAccessFile(path.toFile(), "r")) {
+            this.list = LongMappedBigList.map(raf.getChannel());
+        }
     }
 
     @Override
