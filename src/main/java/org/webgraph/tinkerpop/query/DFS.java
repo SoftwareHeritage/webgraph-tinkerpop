@@ -6,12 +6,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.webgraph.tinkerpop.WebgraphGremlinQueryExecutor;
+import org.webgraph.tinkerpop.benchmark.Utils;
 import org.webgraph.tinkerpop.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.WebGraphGraph;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -41,13 +40,7 @@ public class DFS {
     }
 
     private static void time(Consumer<BidirectionalImmutableGraph> query, BidirectionalImmutableGraph g) {
-        time(() -> query.accept(g));
-    }
-
-    private static void time(Runnable r) {
-        Instant start = Instant.now();
-        r.run();
-        System.out.println("Finished in: " + Duration.between(start, Instant.now()).toSeconds() + "s");
+        Utils.time(() -> query.accept(g));
     }
 
     public static Function<GraphTraversalSource, GraphTraversal<Vertex, Vertex>> gremlin() {
