@@ -6,9 +6,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.softwareheritage.graph.labels.DirEntry;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SWH {
     /**
@@ -75,4 +79,43 @@ public class SWH {
                      .until(__.hasLabel("ORI"));
     }
 
+    /**
+     * Returns all paths in a revision subtree.
+     *
+     * @param revision the revision vertex id
+     * @return paths from revision to leaves.
+     */
+    public static Function<GraphTraversalSource, GraphTraversal<Vertex, List<DirEntry[]>>> recursivePaths(long revision) {
+        return g -> g.V(revision).out().hasLabel("DIR")
+                     .repeat(__.outE().inV())
+                     .emit()
+                     .path()
+                     .map(__.unfold()
+                            .<DirEntry[]>values("__arc_label_property__")
+                            .fold());
+
+    }
+
+    /**
+     * Lists all file paths with permissions in a subtree for a given revision.
+     * Similar to {@code ls -lR}
+     *
+     * @param revision  the revision vertex id
+     * @param fileNamer a function providing file names by {@link DirEntry#filenameId}
+     * @return file paths in a revision subtree
+     */
+    public static Function<GraphTraversalSource, GraphTraversal<Vertex, String>> recursivePathsWithPermissions(long revision, Function<Long, String> fileNamer) {
+        return recursivePaths(revision).andThen(paths -> paths
+                .map(dir -> {
+                    List<DirEntry[]> dirEntries = dir.get();
+                    DirEntry dirEntry = dirEntries.get(dirEntries.size() - 1)[0];
+                    String path = dirEntries
+                            .stream()
+                            .map(entries -> Arrays.stream(entries)
+                                                  .map(entry -> fileNamer.apply(entry.filenameId))
+                                                  .collect(Collectors.joining()))
+                            .collect(Collectors.joining("/"));
+                    return String.format("%s [perms: %s]", path, dirEntry.permission);
+                }));
+    }
 }

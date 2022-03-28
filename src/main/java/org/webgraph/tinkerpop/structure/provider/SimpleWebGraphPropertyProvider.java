@@ -55,7 +55,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
     public Object vertexProperty(String key, long nodeId) {
         VertexProperty vertexProperty = vertexProperties.get(key);
         if (vertexProperty == null) {
-            throw new IllegalArgumentException("No property named: " + key);
+            return null;
         }
         return vertexProperty.get(nodeId);
     }
@@ -95,7 +95,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
     public Object edgeProperty(String key, long fromId, long toId) {
         EdgeProperty edgeProperty = edgeProperties.get(key);
         if (edgeProperty == null) {
-            throw new IllegalArgumentException("No property named: " + key);
+            return null;
         }
         return edgeProperty.get(fromId, toId);
     }
