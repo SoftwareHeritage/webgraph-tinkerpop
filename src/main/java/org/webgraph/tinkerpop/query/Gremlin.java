@@ -7,6 +7,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashSet;
+import java.util.function.Function;
 
 public class Gremlin {
 
@@ -20,6 +21,20 @@ public class Gremlin {
                 .V().not(__.in())
                 .repeat(__.out().dedup().where(P.without("a")).aggregate("a"))
                 .until(__.not(__.out()));
+    }
+
+    /**
+     * Find all parents of the provided vertex, which have the provided label.
+     *
+     * @param v     the id of the starting vertex.
+     * @param label the label used to filter parents
+     * @return parent vertices with the provided label.
+     */
+    public static Function<GraphTraversalSource, GraphTraversal<Vertex, Vertex>> parentsWithLabel(long v, String label) {
+        return g -> g.withSideEffect("a", new HashSet<>())
+                     .V(v)
+                     .repeat(__.in().dedup().where(P.without("a")).aggregate("a"))
+                     .emit(__.hasLabel(label)).dedup();
     }
 
 }
