@@ -133,8 +133,8 @@ public class Server {
     public Server(String graphPath) throws IOException {
         this.graph = Graph.loadLabelled(graphPath);  // Load graph into memory. Labels will provide edge properties.
         this.propertyProvider = new SimpleWebGraphPropertyProvider();
-        this.propertyProvider.addVertexProperty(new FileVertexProperty("author_timestamp", Long.class, Path.of(path + ".property.author_timestamp.bin"))); // FileVertexProperty will read the property value from disk
-        this.propertyProvider.addEdgeProperty(new ArcLabelEdgeProperty((ArcLabelledImmutableGraph) graph.getGraph().getForwardGraph())); // Use arc labels as edge property.
+        this.propertyProvider.addVertexProperty(new FileVertexProperty<>("author_timestamp", Long.class, Path.of(path + ".property.author_timestamp.bin"))); // FileVertexProperty will read the property value from disk
+        this.propertyProvider.addEdgeProperty(new ArcLabelEdgeProperty<>((ArcLabelledImmutableGraph) graph.getGraph().getForwardGraph())); // Use arc labels as edge property.
         this.propertyProvider.setVertexLabeller(id -> graph.getNodeType(id).toString()); // Provide custom vertex labels
     }
 

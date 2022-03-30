@@ -17,7 +17,7 @@ import java.nio.file.Path;
  * Offsets correspond to node ids. At the given offset the buffer stores 4 bytes for the length of the message
  * in bytes then the string bytes.
  */
-public class StringFileVertexPropertyGetter implements VertexPropertyGetter {
+public class StringFileVertexPropertyGetter implements VertexPropertyGetter<String> {
     private final ByteBigList buffer;
     private final LongBigList offsets;
 

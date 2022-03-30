@@ -16,7 +16,7 @@ import java.nio.file.Path;
  *
  * @implNote Uses {@link LongMappedBigList#map} to read the file.
  */
-public class LongFileVertexPropertyGetter implements VertexPropertyGetter {
+public class LongFileVertexPropertyGetter implements VertexPropertyGetter<Long> {
     private final LongBigList list;
 
     /**

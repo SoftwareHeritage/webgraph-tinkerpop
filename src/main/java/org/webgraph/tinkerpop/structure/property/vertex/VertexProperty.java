@@ -3,10 +3,10 @@ package org.webgraph.tinkerpop.structure.property.vertex;
 /**
  * Defines a vertex property of a graph.
  */
-public class VertexProperty {
+public class VertexProperty<T> {
 
     private final String key;
-    private final VertexPropertyGetter propertyGetter;
+    private final VertexPropertyGetter<T> propertyGetter;
 
     /**
      * Created a new vertex property with the given key and value extractor.
@@ -14,7 +14,7 @@ public class VertexProperty {
      * @param key            the string key of the property
      * @param propertyGetter a function which receives a vertex id and returns a value associated with that vertex.
      */
-    public VertexProperty(String key, VertexPropertyGetter propertyGetter) {
+    public VertexProperty(String key, VertexPropertyGetter<T> propertyGetter) {
         this.key = key;
         this.propertyGetter = propertyGetter;
     }
@@ -34,7 +34,7 @@ public class VertexProperty {
      * @param vertexId the id of the vertex.
      * @return the value of the property.
      */
-    public Object get(long vertexId) {
+    public T get(long vertexId) {
         return propertyGetter.get(vertexId);
     }
 }

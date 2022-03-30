@@ -1,6 +1,7 @@
 package org.webgraph.tinkerpop.structure.property.vertex.file;
 
 import org.webgraph.tinkerpop.structure.property.vertex.VertexProperty;
+import org.webgraph.tinkerpop.structure.property.vertex.VertexPropertyGetter;
 import org.webgraph.tinkerpop.structure.property.vertex.file.type.LongFileVertexPropertyGetter;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.nio.file.Path;
  * @implNote currently supports only {@code Long} type.
  * @see LongFileVertexPropertyGetter
  */
-public class FileVertexProperty extends VertexProperty {
+public class FileVertexProperty<T> extends VertexProperty<T> {
 
     /**
      * @param key  the string key of the property
@@ -21,13 +22,13 @@ public class FileVertexProperty extends VertexProperty {
      * @param path the path to property file
      * @throws IOException if an I/O error occurs
      */
-    public FileVertexProperty(String key, Class<?> type, Path path) throws IOException {
+    public FileVertexProperty(String key, Class<T> type, Path path) throws IOException {
         super(key, getFilePropertyGetterForType(type, path));
     }
 
-    private static LongFileVertexPropertyGetter getFilePropertyGetterForType(Class<?> type, Path path) throws IOException {
+    private static <T> VertexPropertyGetter<T> getFilePropertyGetterForType(Class<T> type, Path path) throws IOException {
         if (type == Long.class) {
-            return new LongFileVertexPropertyGetter(path);
+            return (VertexPropertyGetter<T>) new LongFileVertexPropertyGetter(path);
         } else {
             throw new RuntimeException("Unsupported property type: " + type.getSimpleName());
         }

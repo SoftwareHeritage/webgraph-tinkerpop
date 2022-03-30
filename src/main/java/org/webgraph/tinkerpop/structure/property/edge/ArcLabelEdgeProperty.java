@@ -5,7 +5,7 @@ import it.unimi.dsi.big.webgraph.labelling.ArcLabelledImmutableGraph;
 /**
  * Edge property getter based on {@link ArcLabelledImmutableGraph}
  */
-public class ArcLabelEdgeProperty extends EdgeProperty {
+public class ArcLabelEdgeProperty<T> extends EdgeProperty<T> {
 
     private static final String KEY = "__arc_label_property__";
 
@@ -19,13 +19,13 @@ public class ArcLabelEdgeProperty extends EdgeProperty {
         super(KEY, getArcLabelPropertyGetter(graph));
     }
 
-    public static EdgePropertyGetter getArcLabelPropertyGetter(ArcLabelledImmutableGraph graph) {
+    public static <T> EdgePropertyGetter<T> getArcLabelPropertyGetter(ArcLabelledImmutableGraph graph) {
         return (fromId, toId) -> {
             var s = graph.successors(fromId);
             long succ;
             while ((succ = s.nextLong()) != -1) {
                 if (succ == toId) {
-                    return s.label().get();
+                    return (T) s.label().get();
                 }
             }
             return null;

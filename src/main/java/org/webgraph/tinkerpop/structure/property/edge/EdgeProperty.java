@@ -3,10 +3,10 @@ package org.webgraph.tinkerpop.structure.property.edge;
 /**
  * Defines an edge property of a graph.
  */
-public class EdgeProperty {
+public class EdgeProperty<T> {
 
     private final String key;
-    private final EdgePropertyGetter propertyGetter;
+    private final EdgePropertyGetter<T> propertyGetter;
 
     /**
      * Created a new edge property with the given key and value extractor.
@@ -14,7 +14,7 @@ public class EdgeProperty {
      * @param key            the string key of the property
      * @param propertyGetter a function which receives two vertex ids and returns a value associated with that edge.
      */
-    public EdgeProperty(String key, EdgePropertyGetter propertyGetter) {
+    public EdgeProperty(String key, EdgePropertyGetter<T> propertyGetter) {
         this.key = key;
         this.propertyGetter = propertyGetter;
     }
@@ -35,7 +35,7 @@ public class EdgeProperty {
      * @param toId   the incoming vertex id.
      * @return the value of the property.
      */
-    public Object get(long fromId, long toId) {
+    public T get(long fromId, long toId) {
         return propertyGetter.get(fromId, toId);
     }
 }

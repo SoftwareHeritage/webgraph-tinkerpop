@@ -15,8 +15,8 @@ import java.util.function.Function;
  */
 public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider {
 
-    private final Map<String, VertexProperty> vertexProperties = new HashMap<>();
-    private final Map<String, EdgeProperty> edgeProperties = new HashMap<>();
+    private final Map<String, VertexProperty<?>> vertexProperties = new HashMap<>();
+    private final Map<String, EdgeProperty<?>> edgeProperties = new HashMap<>();
     private Function<Long, String> vertexLabeller = id -> "vertex";
     private BiFunction<Long, Long, String> edgeLabeller = (from, to) -> "edge";
 
@@ -40,7 +40,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
      * @param vertexProperty the property to register in the provider.
      * @see VertexProperty
      */
-    public void addVertexProperty(VertexProperty vertexProperty) {
+    public void addVertexProperty(VertexProperty<?> vertexProperty) {
         if (vertexProperties.put(vertexProperty.getKey(), vertexProperty) != null) {
             throw new IllegalArgumentException("Key already exists: " + vertexProperty.getKey());
         }
@@ -53,7 +53,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
 
     @Override
     public Object vertexProperty(String key, long nodeId) {
-        VertexProperty vertexProperty = vertexProperties.get(key);
+        VertexProperty<?> vertexProperty = vertexProperties.get(key);
         if (vertexProperty == null) {
             return null;
         }
@@ -80,7 +80,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
      * @param edgeProperty the property to register in the provider.
      * @see EdgeProperty
      */
-    public void addEdgeProperty(EdgeProperty edgeProperty) {
+    public void addEdgeProperty(EdgeProperty<?> edgeProperty) {
         if (edgeProperties.put(edgeProperty.getKey(), edgeProperty) != null) {
             throw new IllegalArgumentException("Key already exists: " + edgeProperty.getKey());
         }
@@ -93,7 +93,7 @@ public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider 
 
     @Override
     public Object edgeProperty(String key, long fromId, long toId) {
-        EdgeProperty edgeProperty = edgeProperties.get(key);
+        EdgeProperty<?> edgeProperty = edgeProperties.get(key);
         if (edgeProperty == null) {
             return null;
         }
