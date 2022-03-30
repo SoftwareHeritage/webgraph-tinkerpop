@@ -3,7 +3,9 @@ package org.webgraph.tinkerpop.structure.property.edge;
 import it.unimi.dsi.big.webgraph.labelling.ArcLabelledImmutableGraph;
 
 /**
- * Edge property getter based on {@link ArcLabelledImmutableGraph}
+ * Edge property getter based on {@link ArcLabelledImmutableGraph}.
+ * <p>
+ * Allows access to a single label for each edge. In order to deconstruct the label object, see {@link ArcLabelEdgeSubProperty}.
  */
 public class ArcLabelEdgeProperty<T> extends EdgeProperty<T> {
 
