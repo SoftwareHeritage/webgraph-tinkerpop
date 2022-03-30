@@ -2,11 +2,12 @@ package org.webgraph.tinkerpop.query;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.softwareheritage.graph.labels.DirEntry;
+import org.webgraph.tinkerpop.server.SwhProperties;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,42 +81,48 @@ public class SWH {
     }
 
     /**
-     * Returns all paths in a revision subtree.
+     * Returns all paths in a revision/directory subtree.
+     * <p>
+     * If the passed vertex is a revision, makes one step to the associated directory vertex.
      *
-     * @param revision the revision vertex id
-     * @return paths from revision to leaves.
+     * @param root the revision/directory vertex id
+     * @return paths from revision/directory to leaves.
      */
-    public static Function<GraphTraversalSource, GraphTraversal<Vertex, List<DirEntry[]>>> recursivePaths(long revision) {
-        return g -> g.V(revision).out().hasLabel("DIR")
+    public static Function<GraphTraversalSource, GraphTraversal<Vertex, Path>> recursivePaths(long root) {
+        return g -> g.V(root).choose(__.hasLabel("REV"), __.out().hasLabel("DIR"))
                      .repeat(__.outE().inV())
                      .emit()
-                     .path()
-                     .map(__.unfold()
-                            .<DirEntry[]>values("__arc_label_property__")
-                            .fold());
-
+                     .path();
     }
 
     /**
      * Lists all file paths with permissions in a subtree for a given revision.
      * Similar to {@code ls -lR}
      *
-     * @param revision  the revision vertex id
-     * @param fileNamer a function providing file names by {@link DirEntry#filenameId}
+     * @param revision the revision vertex id
      * @return file paths in a revision subtree
      */
-    public static Function<GraphTraversalSource, GraphTraversal<Vertex, String>> recursivePathsWithPermissions(long revision, Function<Long, String> fileNamer) {
-        return recursivePaths(revision).andThen(paths -> paths
-                .map(dir -> {
-                    List<DirEntry[]> dirEntries = dir.get();
-                    DirEntry dirEntry = dirEntries.get(dirEntries.size() - 1)[0];
-                    String path = dirEntries
-                            .stream()
-                            .map(entries -> Arrays.stream(entries)
-                                                  .map(entry -> fileNamer.apply(entry.filenameId))
-                                                  .collect(Collectors.joining()))
-                            .collect(Collectors.joining("/"));
-                    return String.format("%s [perms: %s]", path, dirEntry.permission);
-                }));
+    public static Function<GraphTraversalSource, GraphTraversal<Vertex, String>> recursivePathsWithPermissions(long revision) {
+        return recursivePaths(revision).andThen(paths ->
+                paths.map(__.unfold()
+                            .<SwhProperties.DirEntryString[]>values("dir_entry_str")
+                            .fold())
+                     .flatMap(path -> {
+                         List<SwhProperties.DirEntryString[]> pathDirs = path.get();
+                         String dir = pathDirs
+                                 .stream()
+                                 .limit(pathDirs.size() - 1)
+                                 .map(dirs -> dirs[0].filename) // parent path should not have duplicate edges
+                                 .collect(Collectors.joining("/"));
+                         if (!dir.isEmpty()) {
+                             dir += "/";
+                         }
+                         String finalDir = dir;
+                         return Arrays.stream(pathDirs.get(pathDirs.size() - 1))
+                                      .map(entry ->
+                                              String.format("%s%s [perms: %s]", finalDir, entry.filename,
+                                                      entry.permission))
+                                      .iterator();
+                     }));
     }
 }

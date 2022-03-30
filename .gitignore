@@ -3,3 +3,4 @@ target
 src/main/resources/python3kold
 src/main/resources/python3kcompress
 src/main/java/org/softwareheritage
+src/main/java/org/webgraph/tinkerpop/server
