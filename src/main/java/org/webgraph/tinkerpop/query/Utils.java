@@ -1,4 +1,4 @@
-package org.webgraph.tinkerpop.benchmark;
+package org.webgraph.tinkerpop.query;
 
 import java.time.Duration;
 import java.time.Instant;

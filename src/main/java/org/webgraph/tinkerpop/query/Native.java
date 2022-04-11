@@ -1,8 +1,8 @@
 package org.webgraph.tinkerpop.query;
 
+import it.unimi.dsi.big.webgraph.BidirectionalImmutableGraph;
 import it.unimi.dsi.big.webgraph.LazyLongIterator;
 import it.unimi.dsi.big.webgraph.NodeIterator;
-import org.webgraph.tinkerpop.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.WebGraphVertex;
 
 import java.util.HashSet;
@@ -26,6 +26,11 @@ public class Native {
         for (Long root : roots) {
             dfs(root, used, g);
         }
+    }
+
+    public static long dfsEdges(BidirectionalImmutableGraph g) {
+        boolean[] used = new boolean[50_000_000];
+        return dfsEdges(331702, used, g);
     }
 
     /**
@@ -70,5 +75,19 @@ public class Native {
                 dfsSet(childVertex, used, g);
             }
         }
+    }
+
+    private static long dfsEdges(long root, boolean[] used, BidirectionalImmutableGraph g) {
+        used[(int) root] = true;
+        LazyLongIterator successors = g.successors(root);
+        long child;
+        long res = 0;
+        while ((child = successors.nextLong()) != -1) {
+            res += 1;
+            if (!used[(int) child]) {
+                res += dfsEdges(child, used, g);
+            }
+        }
+        return res;
     }
 }

@@ -1,13 +1,12 @@
 package org.webgraph.tinkerpop.query;
 
+import it.unimi.dsi.big.webgraph.BidirectionalImmutableGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.webgraph.tinkerpop.WebgraphGremlinQueryExecutor;
-import org.webgraph.tinkerpop.benchmark.Utils;
-import org.webgraph.tinkerpop.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.WebGraphGraph;
 
 import java.io.IOException;

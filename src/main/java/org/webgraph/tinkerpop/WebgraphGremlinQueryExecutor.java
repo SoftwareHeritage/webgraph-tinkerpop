@@ -10,8 +10,9 @@ import javax.script.Bindings;
 import javax.script.SimpleBindings;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -80,6 +81,28 @@ public class WebgraphGremlinQueryExecutor {
         while (t.hasNext()) {
             System.out.println(t.next());
         }
+    }
+
+    /**
+     * Returns the result entities of the traversal in a List.
+     *
+     * @param t the traversal
+     */
+    public <S, E> List<E> get(Function<GraphTraversalSource, GraphTraversal<S, E>> t) {
+        return get(eval(t));
+    }
+
+    /**
+     * Returns the result entities of the traversal in a List.
+     *
+     * @param t the traversal results
+     */
+    public <S, E> List<E> get(GraphTraversal<S, E> t) {
+        List<E> res = new ArrayList<>();
+        while (t.hasNext()) {
+            res.add(t.next());
+        }
+        return res;
     }
 
     /**
@@ -155,7 +178,7 @@ public class WebgraphGremlinQueryExecutor {
      * @param t the traversal to profile
      * @return the execution time of the traversal in milliseconds
      */
-    public <S, E> long profile(Function<GraphTraversalSource, GraphTraversal<S, E>> t) {
+    public <S, E> TraversalMetrics profile(Function<GraphTraversalSource, GraphTraversal<S, E>> t) {
         return profile(eval(t));
     }
 
@@ -165,7 +188,7 @@ public class WebgraphGremlinQueryExecutor {
      * @param query the query to profile
      * @return the execution time of the traversal in milliseconds
      */
-    public long profile(String query) {
+    public TraversalMetrics profile(String query) {
         return profile(eval(query));
     }
 
@@ -175,9 +198,9 @@ public class WebgraphGremlinQueryExecutor {
      * @param t the traversal to profile
      * @return the execution time of the traversal in milliseconds
      */
-    public long profile(GraphTraversal<?, ?> t) {
+    public TraversalMetrics profile(GraphTraversal<?, ?> t) {
         TraversalMetrics tm = t.profile().next();
         System.out.println(tm);
-        return tm.getDuration(TimeUnit.MILLISECONDS);
+        return tm;
     }
 }

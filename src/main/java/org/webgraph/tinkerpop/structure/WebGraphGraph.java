@@ -1,9 +1,6 @@
 package org.webgraph.tinkerpop.structure;
 
-import it.unimi.dsi.big.webgraph.ImmutableGraph;
-import it.unimi.dsi.big.webgraph.LazyLongIterator;
-import it.unimi.dsi.big.webgraph.LazyLongIterators;
-import it.unimi.dsi.big.webgraph.NodeIterator;
+import it.unimi.dsi.big.webgraph.*;
 import it.unimi.dsi.fastutil.longs.LongLongPair;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -14,7 +11,6 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.webgraph.tinkerpop.graph.BidirectionalImmutableGraph;
 import org.webgraph.tinkerpop.structure.provider.SimpleWebGraphPropertyProvider;
 import org.webgraph.tinkerpop.structure.provider.WebGraphPropertyProvider;
 
