@@ -199,8 +199,6 @@ public class WebgraphGremlinQueryExecutor {
      * @return the execution time of the traversal in milliseconds
      */
     public TraversalMetrics profile(GraphTraversal<?, ?> t) {
-        TraversalMetrics tm = t.profile().next();
-        System.out.println(tm);
-        return tm;
+        return t.profile().next();
     }
 }
