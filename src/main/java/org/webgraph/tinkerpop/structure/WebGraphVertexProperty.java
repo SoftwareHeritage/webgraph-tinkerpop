@@ -5,35 +5,13 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
-public class WebGraphVertexProperty<V> implements VertexProperty<V> {
-    protected final String key;
-    protected final V value;
+public class WebGraphVertexProperty<V> extends WebGraphProperty<V> implements VertexProperty<V> {
     private final WebGraphVertex vertex;
 
     public WebGraphVertexProperty(WebGraphVertex vertex, String key, V value) {
+        super(vertex, key, value);
         this.vertex = vertex;
-        this.key = key;
-        this.value = value;
-    }
-
-    @Override
-    public String key() {
-        return this.key;
-    }
-
-    @Override
-    public V value() throws NoSuchElementException {
-        if (!isPresent()) {
-            throw new NoSuchElementException();
-        }
-        return this.value;
-    }
-
-    @Override
-    public boolean isPresent() {
-        return this.value != null;
     }
 
     @Override
@@ -50,11 +28,6 @@ public class WebGraphVertexProperty<V> implements VertexProperty<V> {
     @Override
     public <U> Property<U> property(String key, U value) {
         throw VertexProperty.Exceptions.metaPropertiesNotSupported();
-    }
-
-    @Override
-    public void remove() {
-        throw Property.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override

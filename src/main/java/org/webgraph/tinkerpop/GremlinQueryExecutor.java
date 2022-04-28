@@ -4,7 +4,7 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
-import org.webgraph.tinkerpop.structure.WebGraphGraph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
@@ -18,11 +18,11 @@ import java.util.function.Function;
 /**
  * This class provides utility methods that can execute {@code Gremlin} queries on the provided {@code WebGraphGraph}.
  */
-public class WebgraphGremlinQueryExecutor {
+public class GremlinQueryExecutor {
 
-    private final WebGraphGraph g;
+    private final Graph g;
 
-    public WebgraphGremlinQueryExecutor(WebGraphGraph g) {
+    public GremlinQueryExecutor(Graph g) {
         this.g = g;
     }
 
@@ -202,3 +202,4 @@ public class WebgraphGremlinQueryExecutor {
         return t.profile().next();
     }
 }
+

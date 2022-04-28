@@ -17,7 +17,7 @@ import org.webgraph.tinkerpop.structure.provider.WebGraphPropertyProvider;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class WebGraphGraph implements Graph, WrappedGraph<ImmutableGraph> {
+public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutableGraph> {
     private static final String GRAPH_PATH = "webgraph.path";
 
     private final BidirectionalImmutableGraph graph;

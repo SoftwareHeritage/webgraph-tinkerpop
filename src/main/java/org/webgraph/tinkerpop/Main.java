@@ -14,7 +14,7 @@ public class Main {
         boolean profile = args.length == 3 && args[2].equals("--profile");
         try (WebGraphGraph g = WebGraphGraph.open(path)) {
             System.out.println("Opened graph: " + path);
-            var executor = new WebgraphGremlinQueryExecutor(g);
+            var executor = new GremlinQueryExecutor(g);
             if (profile) {
                 executor.profile(query);
             } else {

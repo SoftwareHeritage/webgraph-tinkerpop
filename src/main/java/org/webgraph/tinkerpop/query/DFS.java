@@ -6,7 +6,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.webgraph.tinkerpop.WebgraphGremlinQueryExecutor;
+import org.webgraph.tinkerpop.GremlinQueryExecutor;
 import org.webgraph.tinkerpop.structure.WebGraphGraph;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class DFS {
         } else if (args[0].equals("native-set")) {
             time(Native::dfsSet, graph.getBaseGraph());
         } else if (args[0].equals("gremlin")) {
-            WebgraphGremlinQueryExecutor e = new WebgraphGremlinQueryExecutor(graph);
+            GremlinQueryExecutor e = new GremlinQueryExecutor(graph);
             e.time(Gremlin::leaves, LEAVES_COUNT);
         } else {
             System.out.println(USAGE);
