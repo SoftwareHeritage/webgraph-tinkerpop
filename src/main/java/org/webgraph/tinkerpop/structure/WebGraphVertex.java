@@ -10,9 +10,13 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class WebGraphVertex extends WebGraphElement implements Vertex {
+
+    private final Map<String, VertexProperty> properties = new HashMap<>();
 
     public WebGraphVertex(long id, WebGraphGraph graph) {
         super(id, graph.getPropertyProvider().vertexLabel(id), graph);
@@ -52,7 +56,7 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
             public Vertex next() {
                 long res = next;
                 next = source.nextLong();
-                return new WebGraphVertex(res, graph);
+                return graph.vertexCache.computeIfAbsent(res, idd -> new WebGraphVertex(idd, graph));
             }
         };
     }
@@ -116,9 +120,15 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
                 nextIndex++;
                 while (nextIndex < keys.length) {
                     String key = keys[nextIndex];
-                    Object val = graph.getPropertyProvider().vertexProperty(key, (long) id());
-                    if (val != null) {
+                    VertexProperty<V> p = properties.computeIfAbsent(key, k -> {
+                        Object val = graph.getPropertyProvider().vertexProperty(key, (long) id());
+                        if (val == null) {
+                            return VertexProperty.empty();
+                        }
                         return new WebGraphVertexProperty<>(WebGraphVertex.this, key, (V) val);
+                    });
+                    if (p.isPresent()) {
+                        return p;
                     }
                     nextIndex++;
                 }

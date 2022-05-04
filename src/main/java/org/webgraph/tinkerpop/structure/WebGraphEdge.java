@@ -31,12 +31,19 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
         LongLongPair edge = (LongLongPair) id();
         switch (direction) {
             case OUT:
-                return IteratorUtils.of(new WebGraphVertex(edge.firstLong(), graph));
+                Vertex f = graph.vertexCache.computeIfAbsent(edge.firstLong(),
+                        idd -> new WebGraphVertex(idd, graph));
+                return IteratorUtils.of(f);
             case IN:
-                return IteratorUtils.of(new WebGraphVertex(edge.secondLong(), graph));
+                Vertex s = graph.vertexCache.computeIfAbsent(edge.secondLong(),
+                        idd -> new WebGraphVertex(idd, graph));
+                return IteratorUtils.of(s);
             default:
-                return IteratorUtils.of(new WebGraphVertex(edge.firstLong(), graph),
-                        new WebGraphVertex(edge.secondLong(), graph));
+                Vertex f2 = graph.vertexCache.computeIfAbsent(edge.firstLong(),
+                        idd -> new WebGraphVertex(idd, graph));
+                Vertex s2 = graph.vertexCache.computeIfAbsent(edge.secondLong(),
+                        idd -> new WebGraphVertex(idd, graph));
+                return IteratorUtils.of(f2, s2);
         }
     }
 
