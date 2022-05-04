@@ -10,12 +10,20 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class WebGraphEdge extends WebGraphElement implements Edge {
 
+    private final Map<String, Property> properties = new HashMap<>();
+
     public WebGraphEdge(long fromId, long toId, WebGraphGraph graph) {
-        super(new LongLongImmutablePair(fromId, toId), graph.getPropertyProvider().edgeLabel(fromId, toId), graph);
+        this(new LongLongImmutablePair(fromId, toId), graph);
+    }
+
+    public WebGraphEdge(LongLongPair id, WebGraphGraph graph) {
+        super(id, graph.getPropertyProvider().edgeLabel(id.firstLong(), id.secondLong()), graph);
     }
 
     @Override
@@ -37,7 +45,8 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
     public <V> Iterator<Property<V>> properties(String... propertyKeys) {
         LongLongPair id = (LongLongPair) id();
         String[] keys = propertyKeys.length == 0 ? graph.getPropertyProvider()
-                                                        .edgeProperties(id.firstLong(), id.secondLong()) : propertyKeys; // if no props are provided, return all props
+                                                        .edgeProperties(id.firstLong(),
+                                                                id.secondLong()) : propertyKeys; // if no props are provided, return all props
         return new Iterator<>() {
             int nextIndex = -1;
             Property<V> nextProp = nextProp();
@@ -58,9 +67,15 @@ public class WebGraphEdge extends WebGraphElement implements Edge {
                 nextIndex++;
                 while (nextIndex < keys.length) {
                     String key = keys[nextIndex];
-                    Object val = graph.getPropertyProvider().edgeProperty(key, id.firstLong(), id.secondLong());
-                    if (val != null) {
+                    Property<V> p = properties.computeIfAbsent(key, k -> {
+                        Object val = graph.getPropertyProvider().edgeProperty(key, id.firstLong(), id.secondLong());
+                        if (val == null) {
+                            return Property.empty();
+                        }
                         return new WebGraphProperty<>(WebGraphEdge.this, key, (V) val);
+                    });
+                    if (p.isPresent()) {
+                        return p;
                     }
                     nextIndex++;
                 }

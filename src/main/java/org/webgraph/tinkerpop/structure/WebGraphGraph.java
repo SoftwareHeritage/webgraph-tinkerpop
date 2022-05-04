@@ -13,16 +13,19 @@ import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.webgraph.tinkerpop.structure.provider.SimpleWebGraphPropertyProvider;
 import org.webgraph.tinkerpop.structure.provider.WebGraphPropertyProvider;
+import org.webgraph.tinkerpop.util.LRUCache;
 
 import java.io.IOException;
 import java.util.Iterator;
 
 public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutableGraph> {
     private static final String GRAPH_PATH = "webgraph.path";
+    public static final String EDGE_CACHE = "webgraph.edge-cache";
 
     private final BidirectionalImmutableGraph graph;
     private final Configuration configuration;
     private final WebGraphPropertyProvider propertyProvider;
+    protected final LRUCache<LongLongPair, Edge> edgeCache;
 
     private WebGraphGraph(String path, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
@@ -33,6 +36,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
         this.configuration = configuration;
         this.graph = graph;
         this.propertyProvider = propertyProvider;
+        this.edgeCache = new LRUCache<>(configuration.getInt(EDGE_CACHE));
     }
 
     @Override
@@ -61,14 +65,22 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
     }
 
     public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphPropertyProvider propertyProvider, String path) {
-        Configuration config = EMPTY_CONFIGURATION();
+        Configuration config = DEFAULT_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
         return new WebGraphGraph(graph, propertyProvider, config);
     }
 
-    public static Configuration EMPTY_CONFIGURATION() {
+    public static WebGraphGraph open(BidirectionalImmutableGraph graph, WebGraphPropertyProvider propertyProvider, String path, int edgeCache) {
+        Configuration config = DEFAULT_CONFIGURATION();
+        config.setProperty(GRAPH_PATH, path);
+        config.setProperty(EDGE_CACHE, edgeCache);
+        return new WebGraphGraph(graph, propertyProvider, config);
+    }
+
+    public static Configuration DEFAULT_CONFIGURATION() {
         return new BaseConfiguration() {{
             this.setProperty(Graph.GRAPH, WebGraphGraph.class.getName());
+            this.setProperty(EDGE_CACHE, 100_000);
         }};
     }
 
@@ -78,7 +90,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
     }
 
     public static WebGraphGraph open(String path) throws IOException {
-        Configuration config = EMPTY_CONFIGURATION();
+        Configuration config = DEFAULT_CONFIGURATION();
         config.setProperty(GRAPH_PATH, path);
         return open(config);
     }
@@ -180,7 +192,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
                 }
                 LongLongPair id = (LongLongPair) idObj;
                 nextIndex++;
-                return new WebGraphEdge(id.firstLong(), id.secondLong(), WebGraphGraph.this);
+                return edgeCache.computeIfAbsent(id, idd -> new WebGraphEdge(idd, WebGraphGraph.this));
             }
         };
     }

@@ -1,6 +1,7 @@
 package org.webgraph.tinkerpop.structure;
 
 import it.unimi.dsi.big.webgraph.LazyLongIterator;
+import it.unimi.dsi.fastutil.longs.LongLongImmutablePair;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -70,12 +71,18 @@ public class WebGraphVertex extends WebGraphElement implements Vertex {
 
     private Iterator<Edge> outEdges(String... edgeLabels) {
         Iterator<Vertex> out = vertices(Direction.OUT, edgeLabels);
-        return IteratorUtils.map(out, to1 -> new WebGraphEdge((long) id(), (long) to1.id(), graph));
+        return IteratorUtils.map(out, to1 -> {
+            var id = new LongLongImmutablePair((long) id(), (long) to1.id());
+            return graph.edgeCache.computeIfAbsent(id, idd -> new WebGraphEdge(idd, graph));
+        });
     }
 
     private Iterator<Edge> inEdges(String... edgeLabels) {
         Iterator<Vertex> in = vertices(Direction.IN, edgeLabels);
-        return IteratorUtils.map(in, from1 -> new WebGraphEdge((long) from1.id(), (long) id(), graph));
+        return IteratorUtils.map(in, from1 -> {
+            var id = new LongLongImmutablePair((long) from1.id(), (long) id());
+            return graph.edgeCache.computeIfAbsent(id, idd -> new WebGraphEdge(idd, graph));
+        });
     }
 
     @Override
