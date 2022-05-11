@@ -38,14 +38,14 @@ public class DFS {
     }
 
     public static void main(String[] args) throws IOException {
-        String USAGE = "Usage: Leaves <graphPath> <native|native-set|gremlin>";
+        String USAGE = "Usage: DFS <graphPath> <native|native-set|gremlin>";
         if (args == null || args.length != 2) {
             System.out.println(USAGE);
             return;
         }
 
         WebGraphGraph graph = WebGraphGraph.open(args[0]);
-        System.out.println(graph.getBaseGraph().numNodes());
+        System.out.println("Nodes: " + graph.getBaseGraph().numNodes());
         System.out.println("Memory after graph opened: " + getHeapMemoryUsage() + " MB");
         if (args[1].equals("native")) {
             time(Native::dfs, graph.getBaseGraph());
