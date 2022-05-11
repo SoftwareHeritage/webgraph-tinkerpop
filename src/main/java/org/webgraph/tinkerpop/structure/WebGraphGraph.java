@@ -11,7 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.webgraph.tinkerpop.structure.provider.SimpleWebGraphPropertyProvider;
+import org.webgraph.tinkerpop.structure.provider.StandardWebGraphPropertyProvider;
 import org.webgraph.tinkerpop.structure.provider.WebGraphPropertyProvider;
 import org.webgraph.tinkerpop.util.LRUCache;
 
@@ -31,7 +31,7 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
 
     private WebGraphGraph(String path, Configuration configuration) throws IOException {
         this(new BidirectionalImmutableGraph(ImmutableGraph.load(path), ImmutableGraph.load(path + "-transposed")),
-                new SimpleWebGraphPropertyProvider(), configuration);
+                new StandardWebGraphPropertyProvider(), configuration);
     }
 
     private WebGraphGraph(BidirectionalImmutableGraph graph, WebGraphPropertyProvider propertyProvider, Configuration configuration) {

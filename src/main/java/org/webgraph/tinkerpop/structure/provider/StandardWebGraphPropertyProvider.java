@@ -13,7 +13,7 @@ import java.util.function.Function;
  *
  * @implNote All registered properties are associated with every vertex/edge. Vertices not associated with a property are assumed to store a null value.
  */
-public class SimpleWebGraphPropertyProvider implements WebGraphPropertyProvider {
+public class StandardWebGraphPropertyProvider implements WebGraphPropertyProvider {
 
     private final Map<String, VertexProperty<?>> vertexProperties = new HashMap<>();
     private final Map<String, EdgeProperty<?>> edgeProperties = new HashMap<>();

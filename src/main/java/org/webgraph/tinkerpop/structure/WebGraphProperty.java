@@ -10,8 +10,8 @@ public class WebGraphProperty<V> implements Property<V> {
     protected final V value;
     private final WebGraphElement element;
 
-    public WebGraphProperty(WebGraphElement vertex, String key, V value) {
-        this.element = vertex;
+    public WebGraphProperty(WebGraphElement element, String key, V value) {
+        this.element = element;
         this.key = key;
         this.value = value;
     }
