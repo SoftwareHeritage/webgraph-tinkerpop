@@ -54,7 +54,7 @@ public class DFS {
             time(Native::dfsSet, graph.getBaseGraph());
         } else if (args[1].equals("gremlin")) {
             GremlinQueryExecutor e = new GremlinQueryExecutor(graph);
-            System.out.println(e.profile(Gremlin::leaves));
+            System.out.println(e.profile(Gremlin::dfs));
         } else {
             System.out.println(USAGE);
         }
