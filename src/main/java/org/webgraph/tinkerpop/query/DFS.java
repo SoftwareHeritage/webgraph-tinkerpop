@@ -46,6 +46,7 @@ public class DFS {
 
         WebGraphGraph graph = WebGraphGraph.open(args[0]);
         System.out.println("Nodes: " + graph.getBaseGraph().numNodes());
+        System.out.println("Nodes: " + graph.getBaseGraph().numArcs());
         System.out.println("Memory after graph opened: " + getHeapMemoryUsage() + " MB");
         if (args[1].equals("native")) {
             time(Native::dfs, graph.getBaseGraph());
