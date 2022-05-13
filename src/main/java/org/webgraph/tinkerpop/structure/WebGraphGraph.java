@@ -127,8 +127,8 @@ public class WebGraphGraph implements Graph, WrappedGraph<BidirectionalImmutable
     public static Configuration DEFAULT_CONFIGURATION() {
         return new BaseConfiguration() {{
             this.setProperty(Graph.GRAPH, WebGraphGraph.class.getName());
-            this.setProperty(EDGE_CACHE, 100_000);
-            this.setProperty(VERTEX_CACHE, 100_000);
+            this.setProperty(EDGE_CACHE, 1);
+            this.setProperty(VERTEX_CACHE, 1);
         }};
     }
 
