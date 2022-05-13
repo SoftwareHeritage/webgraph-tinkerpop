@@ -34,7 +34,7 @@ public class DFS {
     private static void time(Runnable r) {
         Instant start = Instant.now();
         r.run();
-        System.out.println("Finished in: " + Duration.between(start, Instant.now()).toSeconds() + "s");
+        System.out.println("Finished in: " + Duration.between(start, Instant.now()).toMillis() + "ms");
     }
 
     public static void main(String[] args) throws IOException {
