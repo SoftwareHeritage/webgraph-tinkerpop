@@ -19,7 +19,7 @@ public interface WebGraphPropertyProvider {
      * Returns keys of all properties, available for this vertex.
      *
      * @param vertexId the id of the vertex
-     * @return the associated label
+     * @return keys of all associated properties
      */
     String[] vertexProperties(long vertexId);
 
@@ -33,15 +33,6 @@ public interface WebGraphPropertyProvider {
     Object vertexProperty(String key, long vertexId);
 
     /**
-     * Returns keys of all properties, available for this edge.
-     *
-     * @param fromId the id of the outgoing vertex (tail of the edge)
-     * @param toId   the id of the in vertex (head of the edge)
-     * @return the associated label
-     */
-    String[] edgeProperties(long fromId, long toId);
-
-    /**
      * Returns the label associated with an edge.
      * An edge can only have one label.
      *
@@ -50,6 +41,15 @@ public interface WebGraphPropertyProvider {
      * @return the associated label
      */
     String edgeLabel(long fromId, long toId);
+    
+    /**
+     * Returns keys of all properties, available for this edge.
+     *
+     * @param fromId the id of the outgoing vertex (tail of the edge)
+     * @param toId   the id of the in vertex (head of the edge)
+     * @return keys of all associated properties
+     */
+    String[] edgeProperties(long fromId, long toId);
 
     /**
      * Returns the value of the property associated with an edge.
